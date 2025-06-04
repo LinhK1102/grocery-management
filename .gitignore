@@ -15,3 +15,78 @@ mobile/build/
 *.DS_Store
 *.log
 .env
+
+# === Android Studio ===
+.idea/
+*.iml
+.gradle/
+local.properties
+.cxx/
+
+# === Build output ===
+/build/
+/*/build/
+
+# === Signing ===
+*.jks
+*.keystore
+*.pem
+*.key
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Log & crash reports ===
+*.log
+crashlytics-build.properties
+
+# === Gradle ===
+/gradle/
+!gradle-wrapper.jar
+gradle-wrapper.properties
+
+# === Kotlin ===
+*.kotlin_module
+
+# === IntelliJ run configs ===
+*.ipr
+*.iws
+out/
+
+# === Auto-generated files ===
+captures/
+.externalNativeBuild/
+navigation.json
+
+# === NDK ===
+obj/
+
+# === Misc ===
+*.apk
+*.ap_
+*.aab
+
+# === Fastlane (if used) ===
+fastlane/report.xml
+fastlane/screenshots
+fastlane/test_output
+
+# === Firebase / Crashlytics (if used) ===
+google-services.json
+fabric.properties
+
+# === Android Studio Profiler ===
+*.hprof
+
+# === Jetpack Compose preview cache ===
+*.preview
+
+# === Local test & coverage ===
+/test-output/
+/coverage/
+
+# === Generated code ===
+/build/
+/Generated/
+
