@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,5 +27,11 @@ namespace DataAccess.DAO
             .OrderByDescending(e => e.Orders.Count)
             .Take(5)
             .ToList();
+
+        public async Task<Employee?> GetByEmailAsync(string email)
+        {
+            return await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeEmail == email);
+        }
     }
 }
