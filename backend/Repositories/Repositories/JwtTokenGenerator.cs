@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Interfaces;
@@ -25,17 +25,17 @@ namespace Repositories.Repositories
         {
             var claims = new[]
             {
-            new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
-            new Claim(ClaimTypes.Name, employee.EmployeeName),
-            //new Claim(ClaimTypes.Role, employee.Role)
-        };
+        new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
+        new Claim(ClaimTypes.Name, employee.EmployeeName),
+        new Claim(ClaimTypes.Role, "Employee") // hoặc employee.Role nếu có
+    };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: "your_issuer",
+                audience: "your_audience",
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds
@@ -43,6 +43,7 @@ namespace Repositories.Repositories
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 
 }

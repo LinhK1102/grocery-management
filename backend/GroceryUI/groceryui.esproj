@@ -9,13 +9,9 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
   </PropertyGroup>
 
-	<Target Name="ViteDevServer" BeforeTargets="Build">
-		<Exec Command="npm install" />
+	<Target Name="BuildViteApp" AfterTargets="Publish">
+		<Exec Command="npm install" Condition="!Exists('node_modules')" />
+		<Exec Command="npm run build" />
 	</Target>
-
-	<Target Name="RunVite" AfterTargets="Build">
-		<Exec Command="npm run dev" />
-	</Target>
-
 
 </Project>

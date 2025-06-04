@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using DataAccess.DAO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -34,6 +34,7 @@ builder.Services.AddScoped<RetailOutletDAO>();
 builder.Services.AddScoped<SupplierDAO>();
 builder.Services.AddScoped<WarehouseDAO>();
 
+
 // --- Repositories: Business logic layer ---
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
@@ -47,6 +48,8 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 // --- Utilities: Supporting services ---
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
+//
+builder.Services.AddHttpClient<IBarcodeRepository, BarcodeRepository>();
 //builder.Services.AddControllers();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -61,16 +64,25 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Đường dẫn tới thư mục React build
-//var reactDistPath = Path.Combine(Directory.GetCurrentDirectory(), "GroceryUI", "dist");
-// Giả sử GroceryUI nằm cùng cấp GroceryAPI
-var reactDistPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "GroceryUI", "dist");
+var baseDir = AppContext.BaseDirectory;
 
-app.UseStaticFiles(new StaticFileOptions
+// Từ bin\Debug\netX.X → lên tới backend\GroceryUI\dist
+var reactDistPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "GroceryUI", "dist"));
+
+if (!Directory.Exists(reactDistPath))
 {
-    FileProvider = new PhysicalFileProvider(reactDistPath),
-    RequestPath = ""
-});
+    Console.WriteLine("⚠️ 'dist' folder not found. Please build React app first.");
+    // Hoặc gọi npm run build tự động nếu muốn (như đã hướng dẫn trước)
+}
+else
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(reactDistPath),
+        RequestPath = ""
+    });
+}
+
 
 app.MapFallbackToFile("index.html");
 
