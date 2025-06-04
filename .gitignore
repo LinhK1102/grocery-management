@@ -1,0 +1,17 @@
+# For .NET
+backend/**/bin/
+backend/**/obj/
+backend/.vs/
+*.user
+*.suo
+
+# For Android Studio
+mobile/.idea/
+mobile/.gradle/
+mobile/build/
+*.iml
+
+# General
+*.DS_Store
+*.log
+.env
