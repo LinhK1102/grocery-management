@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 //using Microsoft.Extensions.Configuration.FileExtensions;
 //using Microsoft.Extensions.Configuration.Json;
 using System.IO;
-using Microsoft.Extensions.Configuration; // chứa SetBasePath
+using Microsoft.Extensions.Configuration;
 
-namespace BusinessObjects
+namespace BusinessObjects.Entities
 {
 
     public class ApplicationDbContext : DbContext

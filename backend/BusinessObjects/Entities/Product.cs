@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BusinessObjects
+namespace BusinessObjects.Entities
 {
     public class Product
     {

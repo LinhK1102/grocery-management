@@ -5,14 +5,14 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BusinessObjects
+namespace BusinessObjects.Entities
 {
-    public class Customer
+    public class Warehouse
     {
-        public int CustomerId { get; set; }
-        public string CustomerName { get; set; }
-        public string CustomerType { get; set; }
-        public decimal DiscountRate { get; set; }
+        public int WarehouseId { get; set; }
+        public string WarehouseName { get; set; }
+        public string WarehouseLocation { get; set; }
+
         [JsonIgnore]
         public ICollection<Order> Orders { get; set; }
     }

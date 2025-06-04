@@ -5,15 +5,12 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BusinessObjects
+namespace BusinessObjects.Entities
 {
-    public class Supplier
+    public class Category
     {
-        public int SupplierId { get; set; }
-        public string SupplierName { get; set; }
-        public string SupplierEmail { get; set; }
-        public string SupplierPhoneNumber { get; set; }
-
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
         [JsonIgnore]
         public ICollection<Product> Products { get; set; }
     }
