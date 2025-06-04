@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,11 @@ namespace DataAccess.DAO
         public List<Employee> GetAllEmployees() => _context.Employees.ToList();
         public Employee GetEmployeeById(int id) => _context.Employees.Find(id);
         public void CreateEmployee(Employee e) { _context.Employees.Add(e); _context.SaveChanges(); }
+        public async Task AddAsync(Employee employee)
+        {
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+        }
         public void UpdateEmployee(Employee e) { _context.Employees.Update(e); _context.SaveChanges(); }
         public void DeleteEmployee(int id)
         {
@@ -29,9 +34,8 @@ namespace DataAccess.DAO
             .ToList();
 
         public async Task<Employee?> GetByEmailAsync(string email)
-        {
-            return await _context.Employees
+        => await _context.Employees
                 .FirstOrDefaultAsync(e => e.EmployeeEmail == email);
-        }
+        
     }
 }

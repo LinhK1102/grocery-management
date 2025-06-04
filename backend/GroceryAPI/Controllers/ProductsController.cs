@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interfaces;
 using Repositories.Repositories;
