@@ -8,4 +8,14 @@
     <!-- Folder where production build objects will be placed -->
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
   </PropertyGroup>
+
+	<Target Name="ViteDevServer" BeforeTargets="Build">
+		<Exec Command="npm install" />
+	</Target>
+
+	<Target Name="RunVite" AfterTargets="Build">
+		<Exec Command="npm run dev" />
+	</Target>
+
+
 </Project>
