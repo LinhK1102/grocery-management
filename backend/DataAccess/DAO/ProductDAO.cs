@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +46,7 @@ namespace DataAccess.DAO
 
         public Product GetProductByBarcode(string barcode)
             => _context.Products.FirstOrDefault(p => p.BarcodeValue == barcode);
+
 
         public List<Product> GetLowStockProducts(int threshold)
             => _context.Products.Where(p => p.UnitsInStock < threshold).ToList();

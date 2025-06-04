@@ -1,4 +1,5 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Commons;
+using BusinessObjects.Entities;
 using Repositories.DTOs;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,8 @@ namespace Repositories.Interfaces
     {
         List<Employee> GetAllEmployees();
         Employee GetEmployeeById(int id);
-        Task<EmployeeLoginResponse?> LoginAsync(EmployeeLoginRequest request);
+        Task<ApiResponse<EmployeeLoginResponse>> LoginAsync(EmployeeLoginRequest request);
+        Task<ApiResponse<EmployeeRegisterResponse>> RegisterAsync(EmployeeRegisterRequest request);
         void CreateEmployee(Employee e);
         void UpdateEmployee(Employee e);
         void DeleteEmployee(int id);

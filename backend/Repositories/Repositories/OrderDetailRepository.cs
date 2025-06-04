@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using DataAccess.DAO;
 using Repositories.Interfaces;
 using System;

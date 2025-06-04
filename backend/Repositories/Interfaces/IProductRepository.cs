@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using System.Collections.Generic;
 
 namespace Repositories.Interfaces
@@ -12,6 +12,7 @@ namespace Repositories.Interfaces
         void DeleteProduct(int id);
 
         Product GetProductByBarcode(string barcode);
+        //Product GetProductInfByBarcode(string barcode);
         List<Product> GetLowStockProducts(int threshold);
         void AdjustStock(string barcode, string action, int quantity);
 

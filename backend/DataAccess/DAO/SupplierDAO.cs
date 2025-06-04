@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿using BusinessObjects.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
