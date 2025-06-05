@@ -14,7 +14,19 @@ namespace BusinessObjects.Entities
             : base(options)
         {
         }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json")
+                    .Build();
 
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                optionsBuilder.UseSqlServer(connectionString);
+            }
+        }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Customer> Customers { get; set; }
@@ -57,6 +69,20 @@ namespace BusinessObjects.Entities
                         .WithMany(w => w.Orders)
                         .HasForeignKey(o => o.WarehouseId)
                         .OnDelete(DeleteBehavior.Restrict);
+
+            // Thiết lập quan hệ cho ProductWarehouse
+            modelBuilder.Entity<ProductWarehouse>()
+      .HasKey(pw => new { pw.ProductId, pw.WarehouseId });
+
+            modelBuilder.Entity<ProductWarehouse>()
+                .HasOne(pw => pw.Product)
+                .WithMany(p => p.ProductWarehouses)
+                .HasForeignKey(pw => pw.ProductId);
+
+            modelBuilder.Entity<ProductWarehouse>()
+                .HasOne(pw => pw.Warehouse)
+                .WithMany(w => w.ProductWarehouses)
+                .HasForeignKey(pw => pw.WarehouseId);
         }
     }
 }

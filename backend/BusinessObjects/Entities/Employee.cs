@@ -15,6 +15,10 @@ namespace BusinessObjects.Entities
         public string EmployeeEmailTokenPass { get; set; }
         [JsonIgnore]
         public ICollection<Order> Orders { get; set; }
+
+        public int RetailOutletId { get; set; }
+        [JsonIgnore]
+        public RetailOutlet RetailOutlet { get; set; }
     }
 
 }

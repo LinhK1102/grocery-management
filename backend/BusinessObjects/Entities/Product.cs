@@ -12,6 +12,12 @@ namespace BusinessObjects.Entities
         public decimal UnitPrice { get; set; }
         public string BarcodeValue { get; set; }
 
+        public DateTime ExpiryDate { get; set; }
+        public DateTime ManufactureDate { get; set; }
+        public DateTime ImportedDate { get; set; }
+
+        public ICollection<Item> Items { get; set; }
+
         [JsonIgnore]
         public Category Category { get; set; }
         [JsonIgnore]
@@ -19,6 +25,9 @@ namespace BusinessObjects.Entities
 
         [JsonIgnore]
         public ICollection<OrderDetail> OrderDetails { get; set; }
+
+        [JsonIgnore]
+        public ICollection<ProductWarehouse> ProductWarehouses { get; set; }
     }
 
 
