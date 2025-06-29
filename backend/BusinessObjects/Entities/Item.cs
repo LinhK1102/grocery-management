@@ -8,8 +8,8 @@ namespace BusinessObjects.Entities
 {
     public class Item
     {
-        public int ItemId { get; set; }
-
+        public string ItemId { get; set; }
+        public string BatchCode { get; set; }
         public int ProductId { get; set; }
         public Product Product { get; set; }
 

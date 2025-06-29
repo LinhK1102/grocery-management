@@ -9,6 +9,7 @@ namespace Repositories.Interfaces
 {
     public interface IBarcodeRepository
     {
-        Task<UpcProductResponse?> GetProductByBarcodeAsync(string barcode);
+        Task<UpcProductResponse?> GetProductInfoFromApiAsync(string barcode);
+        Task<UpcProductResponse?> GetOrCreateProductByBarcodeAsync(string barcode);
     }
 }

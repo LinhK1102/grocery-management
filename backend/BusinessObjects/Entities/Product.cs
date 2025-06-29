@@ -12,9 +12,9 @@ namespace BusinessObjects.Entities
         public decimal UnitPrice { get; set; }
         public string BarcodeValue { get; set; }
 
-        public DateTime ExpiryDate { get; set; }
-        public DateTime ManufactureDate { get; set; }
-        public DateTime ImportedDate { get; set; }
+        public DateTime ExpiryDuration { get; set; }
+        //public DateTime ManufactureDate { get; set; }
+        //public DateTime ImportedDate { get; set; }
 
         public ICollection<Item> Items { get; set; }
 

@@ -1,5 +1,9 @@
 ﻿using Azure.Core;
+using BusinessObjects.Commons;
 using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repositories.Interfaces;
 using System;
@@ -10,6 +14,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Utility.Mapper;
 
 namespace Repositories.Repositories
 {
@@ -17,14 +22,16 @@ namespace Repositories.Repositories
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
+        private readonly IProductRepository _productRepository;
 
-        public BarcodeRepository(HttpClient httpClient, IConfiguration configuration)
+        public BarcodeRepository(HttpClient httpClient, IConfiguration configuration, IProductRepository productRepository)
         {
             _httpClient = httpClient;
             _apiKey = configuration["UpcApi:ApiKey"]; // Lấy config từ API project
+            _productRepository = productRepository;
         }
 
-        public async Task<UpcProductResponse?> GetProductByBarcodeAsync(string barcode)
+        public async Task<UpcProductResponse?> GetProductInfoFromApiAsync(string barcode)
         {
             try
             {
@@ -32,7 +39,17 @@ namespace Repositories.Repositories
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode) return null;
 
-                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                //using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var jsonString = await response.Content.ReadAsStringAsync();
+
+                // Lưu file trước khi parse
+                var filePath = @"D:\FPT\2025_Summer\PRN232\jsonValue.txt";
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                await File.WriteAllTextAsync(filePath, jsonString);
+
+                // Sau đó parse bình thường
+                using var doc = JsonDocument.Parse(jsonString);
+
                 var root = doc.RootElement;
 
                 string GetString(string name) =>
@@ -88,6 +105,38 @@ namespace Repositories.Repositories
             }
         }
 
+        public async Task<ApiResponse<Product>> GetOrCreateProductByBarcodeAsync(string barcode)
+        {
+            // Bước 1: Kiểm tra sản phẩm đã có trong DB chưa
+            var existingProduct = _productRepository.GetProductByBarcode(barcode);
+            if (existingProduct != null)
+            {
+                return null;
+            }
 
+            // Bước 2: Gọi API ngoài để lấy thông tin sản phẩm
+            var upcResponse = await GetProductInfoFromApiAsync(barcode);
+            if (upcResponse == null || !upcResponse.Status)
+            {
+                return null; // hoặc throw lỗi tùy cách bạn xử lý
+            }
+
+            // Bước 3: Mapping thông tin từ response → entity
+            var newProduct = UpcProductMapper.ToProductEntity(upcResponse);
+             _productRepository.AddProduct(newProduct);
+
+
+            return new ApiResponse<Product>
+            {
+                Message = "Product created successfully",
+                Success = true,
+                Data = newProduct
+            };
+        }
+
+        Task<UpcProductResponse?> IBarcodeRepository.GetOrCreateProductByBarcodeAsync(string barcode)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

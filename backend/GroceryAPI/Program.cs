@@ -1,7 +1,9 @@
 ﻿using BusinessObjects.Entities;
 using DataAccess.DAO;
+using Utility.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Repositories.Events;
 using Repositories.Interfaces;
 using Repositories.Repositories;
 
@@ -45,6 +47,9 @@ builder.Services.AddScoped<IRetailOutletRepository, RetailOutletRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
+// --- Repositories: Event handling ---
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
 // --- Utilities: Supporting services ---
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
@@ -58,6 +63,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -97,5 +103,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/notificationHub");
 app.MapControllers();
 app.Run();

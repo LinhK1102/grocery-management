@@ -36,6 +36,11 @@ namespace BusinessObjects.Entities
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<InvoiceItem> InvoiceItem { get; set; }
+        public DbSet<Invoice> Invoice { get; set; }
+        public DbSet<ProductWarehouse> ProductWarehouse { get; set; }
+
 
         // Nếu bạn cần thiết lập quan hệ nâng cao, override OnModelCreating ở đây
         protected override void OnModelCreating(ModelBuilder modelBuilder)

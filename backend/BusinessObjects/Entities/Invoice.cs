@@ -11,7 +11,7 @@ namespace BusinessObjects.Entities
         public int InvoiceId { get; set; }
         public DateTime CreatedDate { get; set; }
         public string CustomerName { get; set; }
-
+        public string InvoiceFilePath { get; set; }
         public ICollection<InvoiceItem> InvoiceItems { get; set; }
     }
 }
