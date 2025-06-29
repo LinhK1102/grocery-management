@@ -1,10 +1,3 @@
-# For .NET
-backend/**/bin/
-backend/**/obj/
-backend/.vs/
-*.user
-*.suo
-
 # For Android Studio
 mobile/.idea/
 mobile/.gradle/
@@ -15,3 +8,39 @@ mobile/build/
 *.DS_Store
 *.log
 .env
+
+# .NET / ASP.NET
+backend/**/bin/
+backend/**/obj/
+backend/**/node_modules/
+backend/**/wwwroot/lib
+backend/.vs/
+backend/.sln/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.pdb
+
+# Exclude file solution
+*.sln
+
+# Build output
+/bin/
+/obj/
+/.vs/
+
+# node_modules cho frontend
+/node_modules/
+
+# Tailwind output
+wwwroot/css/site.css
+
+# System and IDE
+*.user
+*.suo
+.idea/
+.vscode/
+
+# Lock file frontend
+package-lock.json
