@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,18 +15,51 @@ namespace DataAccess.DAO
 
         public List<Supplier> GetAllSuppliers() => _context.Suppliers.ToList();
         public Supplier GetSupplierById(int id) => _context.Suppliers.Find(id);
-        public void CreateSupplier(Supplier s) { _context.Suppliers.Add(s); _context.SaveChanges(); }
-        public void UpdateSupplier(Supplier s) { _context.Suppliers.Update(s); _context.SaveChanges(); }
-        public void DeleteSupplier(int id)
+
+        public Supplier? CreateSupplier(Supplier s)
+        {
+            try
+            {
+                _context.Suppliers.Add(s);
+                _context.SaveChanges();
+                return s;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating supplier: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Supplier? UpdateSupplier(Supplier s)
+        {
+            try
+            {
+                _context.Suppliers.Update(s);
+                _context.SaveChanges();
+                return s;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating supplier: {ex.Message}");
+                return null;
+            }
+        }
+
+        public bool DeleteSupplier(int id)
         {
             var hasProducts = _context.Products.Any(p => p.SupplierId == id);
             if (!hasProducts)
             {
                 var s = _context.Suppliers.Find(id);
-                if (s != null) { _context.Suppliers.Remove(s); _context.SaveChanges(); }
+                if (s != null) { _context.Suppliers.Remove(s); _context.SaveChanges(); return true; }
             }
+            else
+            {
+                throw new InvalidOperationException("Cannot delete supplier with existing products.");
+            }
+            return false;
         }
-
         public bool DeleteSupplierWithDependencyCheck(int supplierId)
         {
             var hasProducts = _context.Products.Any(p => p.SupplierId == supplierId);
@@ -41,6 +75,31 @@ namespace DataAccess.DAO
             return true;
         }
 
-       
+        public List<Supplier> SearchSuppliers(string term)
+        {
+            return _context.Suppliers
+                .Where(s => s.SupplierName.Contains(term) || s.SupplierEmail.Contains(term))
+                .ToList();
+        }
+
+        public Supplier GetSupplierBySuplierName(string supplierName) => _context.Suppliers.FirstOrDefault(s => s.SupplierName == supplierName);
+
+        public int GetOrCreateUnknownSupplierId(Supplier supplier)
+        {
+            var existing = GetSupplierBySuplierName(supplier.SupplierName);
+            if (existing != null) return existing.SupplierId;
+
+            var unknown = CreateSupplier(
+                new Supplier
+                {
+                    SupplierName = "Unknown Supplier",
+                    SupplierEmail = "N/A",
+                    SupplierPhoneNumber = "N/A"
+                });
+            if (unknown == null)
+                throw new Exception("Failed to create 'Unknown Supplier'.");
+
+            return unknown.SupplierId;
+        }
     }
 }

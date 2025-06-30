@@ -107,36 +107,40 @@ namespace Repositories.Repositories
 
         public async Task<ApiResponse<Product>> GetOrCreateProductByBarcodeAsync(string barcode)
         {
-            // Bước 1: Kiểm tra sản phẩm đã có trong DB chưa
+            // Step 1: Check if the product already exists in the database
             var existingProduct = _productRepository.GetProductByBarcode(barcode);
             if (existingProduct != null)
             {
-                return null;
+                return new ApiResponse<Product>
+                {
+                    Message = "Product already existed!",
+                    Success = true,
+                    Data = existingProduct
+                };
             }
 
-            // Bước 2: Gọi API ngoài để lấy thông tin sản phẩm
+            // Step 2: Call external API to fetch product information
             var upcResponse = await GetProductInfoFromApiAsync(barcode);
             if (upcResponse == null || !upcResponse.Status)
             {
-                return null; // hoặc throw lỗi tùy cách bạn xử lý
+                return new ApiResponse<Product>
+                {
+                    Message = "Failed to fetch product information from external API",
+                    Success = false,
+                    Data = null
+                };
             }
 
-            // Bước 3: Mapping thông tin từ response → entity
+            // Step 3: Map the response data to a Product entity
             var newProduct = UpcProductMapper.ToProductEntity(upcResponse);
-             _productRepository.AddProduct(newProduct);
-
+            var insertedProduct = _productRepository.AddProduct(newProduct);
 
             return new ApiResponse<Product>
             {
                 Message = "Product created successfully",
                 Success = true,
-                Data = newProduct
+                Data = insertedProduct
             };
-        }
-
-        Task<UpcProductResponse?> IBarcodeRepository.GetOrCreateProductByBarcodeAsync(string barcode)
-        {
-            throw new NotImplementedException();
         }
     }
 }

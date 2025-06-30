@@ -8,17 +8,33 @@ namespace Repositories.Repositories
     public class ProductRepository : IProductRepository
     {
         private readonly ProductDAO _dao;
-
-        public ProductRepository(ApplicationDbContext context)
+        private readonly CategoryDAO _categoryDao;
+        private readonly SupplierDAO _supplierDao;
+        public ProductRepository(ApplicationDbContext context, CategoryDAO categoryDao, SupplierDAO supplierDao)
         {
             _dao = new ProductDAO(context);
+            _categoryDao = categoryDao;
+            _supplierDao = supplierDao;
         }
 
         public List<Product> GetAllProduct() => _dao.GetAllProduct();
         public Product GetProductById(int id) => _dao.GetProductById(id);
-        public void AddProduct(Product product) => _dao.AddProduct(product);
-        public void UpdateProduct(Product product) => _dao.UpdateProduct(product);
-        public void DeleteProduct(int id) => _dao.DeleteProduct(id);
+        public Product AddProduct(Product product)
+        {
+            if (product.CategoryId == 0)
+            {
+                product.CategoryId = _categoryDao.GetOrCreateUncategorizedCategoryId(product.Category);
+            }
+
+            if (product.SupplierId == 0)
+            {
+                product.SupplierId = _supplierDao.GetOrCreateUnknownSupplierId(product.Supplier);
+            }
+            var status = _dao.AddProduct(product);
+            return product;
+        }
+        public Product UpdateProduct(Product product) => _dao.UpdateProduct(product);
+        public bool DeleteProduct(int id) => _dao.DeleteProduct(id);
 
         public Product GetProductByBarcode(string barcode) => _dao.GetProductByBarcode(barcode);
 

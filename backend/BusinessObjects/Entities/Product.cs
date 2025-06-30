@@ -1,7 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BusinessObjects.Entities
 {
+    [Table("Products")]
     public class Product
     {
         public int ProductId { get; set; }

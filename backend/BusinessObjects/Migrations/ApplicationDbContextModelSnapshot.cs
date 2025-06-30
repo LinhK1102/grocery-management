@@ -93,15 +93,69 @@ namespace BusinessObjects.Migrations
                     b.ToTable("Employees");
                 });
 
-            modelBuilder.Entity("BusinessObjects.Entities.Item", b =>
+            modelBuilder.Entity("BusinessObjects.Entities.Invoice", b =>
                 {
-                    b.Property<int>("ItemId")
+                    b.Property<int>("InvoiceId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InvoiceFilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("InvoiceId");
+
+                    b.ToTable("Invoice");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Entities.InvoiceItem", b =>
+                {
+                    b.Property<int>("InvoiceItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceItemId"));
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("InvoiceItemId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("InvoiceItem");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Entities.Item", b =>
+                {
+                    b.Property<string>("ItemId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BatchCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -124,7 +178,7 @@ namespace BusinessObjects.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Item");
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("BusinessObjects.Entities.Order", b =>
@@ -210,13 +264,7 @@ namespace BusinessObjects.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ImportedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ManufactureDate")
+                    b.Property<DateTime>("ExpiryDuration")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ProductName")
@@ -337,6 +385,25 @@ namespace BusinessObjects.Migrations
                     b.Navigation("RetailOutlet");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Entities.InvoiceItem", b =>
+                {
+                    b.HasOne("BusinessObjects.Entities.Invoice", "Invoice")
+                        .WithMany("InvoiceItems")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("BusinessObjects.Entities.Item", b =>
                 {
                     b.HasOne("BusinessObjects.Entities.Product", "Product")
@@ -451,6 +518,11 @@ namespace BusinessObjects.Migrations
             modelBuilder.Entity("BusinessObjects.Entities.Employee", b =>
                 {
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Entities.Invoice", b =>
+                {
+                    b.Navigation("InvoiceItems");
                 });
 
             modelBuilder.Entity("BusinessObjects.Entities.Order", b =>

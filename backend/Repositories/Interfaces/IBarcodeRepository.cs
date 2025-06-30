@@ -1,4 +1,6 @@
-﻿using BusinessObjects.DTOs;
+﻿using BusinessObjects.Commons;
+using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,6 @@ namespace Repositories.Interfaces
     public interface IBarcodeRepository
     {
         Task<UpcProductResponse?> GetProductInfoFromApiAsync(string barcode);
-        Task<UpcProductResponse?> GetOrCreateProductByBarcodeAsync(string barcode);
+        Task<ApiResponse<Product>> GetOrCreateProductByBarcodeAsync(string barcode);
     }
 }

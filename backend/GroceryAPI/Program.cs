@@ -6,6 +6,8 @@ using Microsoft.Extensions.FileProviders;
 using Repositories.Events;
 using Repositories.Interfaces;
 using Repositories.Repositories;
+using BusinessObjects.Commons;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -26,6 +28,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.Configure<ApiSettings>(builder.Configuration);
+
+
 // --- DAOs: Direct database access ---
 builder.Services.AddScoped<CustomerDAO>();
 builder.Services.AddScoped<EmployeeDAO>();
@@ -35,6 +40,7 @@ builder.Services.AddScoped<ProductDAO>();
 builder.Services.AddScoped<RetailOutletDAO>();
 builder.Services.AddScoped<SupplierDAO>();
 builder.Services.AddScoped<WarehouseDAO>();
+builder.Services.AddScoped<CategoryDAO>();
 
 
 // --- Repositories: Business logic layer ---
@@ -66,7 +72,22 @@ builder.Services.AddControllers()
 builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Grocery API",
+        Description = "API for Grocery Store System",
+        Contact = new OpenApiContact
+        {
+            Name = "LinhTK",
+            Email = "trankhanhlinh2201004@gmail.com"
+        }
+    });
+});
+
 
 var app = builder.Build();
 
@@ -84,8 +105,12 @@ else
 {
     app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = new PhysicalFileProvider(reactDistPath),
-        RequestPath = ""
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "no-cache, no-store");
+            ctx.Context.Response.Headers.Append("Pragma", "no-cache");
+            ctx.Context.Response.Headers.Append("Expires", "-1");
+        }
     });
 }
 
@@ -98,7 +123,11 @@ app.UseCors(MyAllowSpecificOrigins);
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grocery API v1");
+        c.RoutePrefix = "swagger";
+    });
 }
 
 app.UseHttpsRedirection();

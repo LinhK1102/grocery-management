@@ -11,9 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Repositorie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryAPI", "GroceryAPI\GroceryAPI.csproj", "{42DBF983-5B38-4BBA-AC96-7A79156CC2DD}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "groceryui", "GroceryUI\groceryui.esproj", "{0A895203-E30F-C4D0-053F-3B560A9E8E83}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{6DE3F696-CEBB-46EB-80E8-C7E543791F11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryUI", "WebApplication\GroceryUI.csproj", "{500E80E3-033F-41B5-A161-92D3B119C417}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,16 +37,14 @@ Global
 		{42DBF983-5B38-4BBA-AC96-7A79156CC2DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42DBF983-5B38-4BBA-AC96-7A79156CC2DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42DBF983-5B38-4BBA-AC96-7A79156CC2DD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A895203-E30F-C4D0-053F-3B560A9E8E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A895203-E30F-C4D0-053F-3B560A9E8E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A895203-E30F-C4D0-053F-3B560A9E8E83}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{0A895203-E30F-C4D0-053F-3B560A9E8E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A895203-E30F-C4D0-053F-3B560A9E8E83}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A895203-E30F-C4D0-053F-3B560A9E8E83}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{6DE3F696-CEBB-46EB-80E8-C7E543791F11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6DE3F696-CEBB-46EB-80E8-C7E543791F11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DE3F696-CEBB-46EB-80E8-C7E543791F11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DE3F696-CEBB-46EB-80E8-C7E543791F11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{500E80E3-033F-41B5-A161-92D3B119C417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{500E80E3-033F-41B5-A161-92D3B119C417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{500E80E3-033F-41B5-A161-92D3B119C417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{500E80E3-033F-41B5-A161-92D3B119C417}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

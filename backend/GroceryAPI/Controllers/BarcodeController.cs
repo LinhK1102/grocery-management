@@ -32,7 +32,7 @@ namespace GroceryAPI.Controllers
             if (product == null)
                 return NotFound("Barcode not found and API has no result.");
 
-            return Ok(product);
+            return Ok(new {Status = "Barcode found.", lists = product});
         }
 
     }

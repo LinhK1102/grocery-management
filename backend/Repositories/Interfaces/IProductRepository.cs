@@ -7,9 +7,9 @@ namespace Repositories.Interfaces
     {
         List<Product> GetAllProduct();
         Product GetProductById(int id);
-        void AddProduct(Product product);
-        void UpdateProduct(Product product);
-        void DeleteProduct(int id);
+        Product AddProduct(Product product);
+        Product UpdateProduct(Product product);
+        bool DeleteProduct(int id);
 
         Product GetProductByBarcode(string barcode);
         //Product GetProductInfByBarcode(string barcode);

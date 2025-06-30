@@ -16,32 +16,60 @@ namespace DataAccess.DAO
 
         public List<Product> GetAllProduct() => _context.Products.Include(p => p.Category).ToList();
 
-        public Product GetProductById(int id) => 
+        public Product GetProductById(int id) =>
             _context.Products
             .Include(c => c.Category)
             .Include(od => od.OrderDetails)
             .FirstOrDefault(p => p.ProductId == id);
 
-        public void AddProduct(Product product)
+        public Product? AddProduct(Product product)
         {
-            _context.Products.Add(product);
-            _context.SaveChanges();
-        }
-
-        public void UpdateProduct(Product product)
-        {
-            _context.Products.Update(product);
-            _context.SaveChanges();
-        }
-
-        public void DeleteProduct(int id)
-        {
-            var product = _context.Products.Find(id);
-            if (product != null)
+            try
             {
-                _context.Products.Remove(product);
+                _context.Products.Add(product);
                 _context.SaveChanges();
+                return product;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding product: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Product UpdateProduct(Product product)
+        {
+            try
+            {
+                _context.Products.Update(product);
+                _context.SaveChanges();
+                return product;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error Update product: {ex.Message}");
+                return null;
+            }
+        }
+
+        public bool DeleteProduct(int id)
+        {
+            try
+            {
+                var product = _context.Products.Find(id);
+                if (product != null)
+                {
+                    _context.Products.Remove(product);
+                    _context.SaveChanges();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error Update product: {ex.Message}");
+                return false;
+            }
+            return false;
         }
 
         public Product GetProductByBarcode(string barcode)
