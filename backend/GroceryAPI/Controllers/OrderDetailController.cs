@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interfaces;
+using Utility.Common;
 
 namespace GroceryAPI.Controllers
 {
@@ -10,32 +11,73 @@ namespace GroceryAPI.Controllers
     {
         private readonly IOrderDetailRepository _orderDetailRepository;
 
-        public OrderDetailController(IOrderDetailRepository repo) => _orderDetailRepository = repo;
-
-        [HttpGet("GetOrderDetailsByOrderId/{orderId}")]
-        public IActionResult GetOrderDetailsByOrderId(int orderId) => Ok(_orderDetailRepository.GetOrderDetailsByOrderId(orderId));
-
-        [HttpPost("CreateOrderDetail")]
-        public IActionResult CreateOrderDetail([FromBody] OrderDetail od)
+        public OrderDetailController(IOrderDetailRepository repo)
         {
-            _orderDetailRepository.CreateOrderDetail(od);
-            return Ok();
+            _orderDetailRepository = repo;
         }
 
-        [HttpPut("UpdateOrderDetail/{id}")]
-        public IActionResult UpdateOrderDetail(int id, OrderDetail od)
+        [HttpGet("get-all-by-order-id/{orderId}")]
+        public IActionResult GetAllByOrderId(int orderId)
         {
-            if (id != od.OrderDetailId) return BadRequest();
-            _orderDetailRepository.UpdateOrderDetail(od);
-            return NoContent();
+            try
+            {
+                var details = _orderDetailRepository.GetOrderDetailsByOrderId(orderId);
+                if (details == null || !details.Any())
+                    return NotFound(SystemStatus.Fail($"No order details found for Order ID {orderId}."));
+
+                return Ok(SystemStatus.Success(details, $"Order details for Order ID {orderId} retrieved."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, SystemStatus.Fail($"An error occurred: {ex.Message}"));
+            }
         }
 
-        [HttpDelete("DeleteOrderDetail/{id}")]
-        public IActionResult DeleteOrderDetail(int id)
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] OrderDetail od)
         {
-            _orderDetailRepository.DeleteOrderDetail(id);
-            return NoContent();
+            try
+            {
+                _orderDetailRepository.CreateOrderDetail(od);
+                return Ok(SystemStatus.Success(od, "Order detail created successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, SystemStatus.Fail($"Failed to create order detail: {ex.Message}"));
+            }
+        }
+
+        [HttpPut("update/{id}")]
+        public IActionResult Update(int id, [FromBody] OrderDetail od)
+        {
+            if (id != od.OrderDetailId)
+                return BadRequest(SystemStatus.Fail("Mismatched OrderDetail ID."));
+
+            try
+            {
+                _orderDetailRepository.UpdateOrderDetail(od);
+                return Ok(SystemStatus.Success(od, "Order detail updated successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, SystemStatus.Fail($"Failed to update order detail: {ex.Message}"));
+            }
+        }
+
+        [HttpDelete("delete/{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                _orderDetailRepository.DeleteOrderDetail(id);
+                return Ok(SystemStatus.Success($"Order detail with ID {id} deleted successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, SystemStatus.Fail($"Failed to delete order detail: {ex.Message}"));
+            }
         }
     }
+
 
 }

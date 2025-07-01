@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
+using Utility.Common;
 
 namespace GroceryAPI.Controllers
 {
@@ -16,48 +17,34 @@ namespace GroceryAPI.Controllers
             _customerRepository = customerRepository;
         }
 
-        [HttpGet]
-        public IActionResult GetAllCustomers() => Ok(_customerRepository.GetAllCustomers());
-
-        [HttpGet("GetCustomerById/{id}")]
-        public IActionResult GetCustomerById(int id) => Ok(_customerRepository.GetCustomerById(id));
-
-        [HttpPost("CreateCustomer/{id}")]
-        public IActionResult CreateCustomer([FromBody] Customer customer)
-        {
-            _customerRepository.CreateCustomer(customer);
-            return CreatedAtAction(nameof(GetCustomerById), new { id = customer.CustomerId }, customer);
-        }
-
-        [HttpPut("UpdateCustomer/{id}")]
-        public IActionResult UpdateCustomer(int id, Customer customer)
-        {
-            if (id != customer.CustomerId) return BadRequest();
-            _customerRepository.UpdateCustomer(customer);
-            return NoContent();
-        }
-
-        [HttpDelete("DeleteCustomer/{id}")]
-        public IActionResult DeleteCustomer(int id)
-        {
-            _customerRepository.DeleteCustomer(id);
-            return NoContent();
-        }
-
         [HttpGet("search")]
-        public IActionResult SearchCustomers(string searchTerm) => Ok(_customerRepository.SearchCustomers(searchTerm));
+        public IActionResult SearchCustomers(string searchTerm)
+        {
+            var result = _customerRepository.SearchCustomers(searchTerm);
+            return Ok(SystemStatus.Success(result, "Customer search completed."));
+        }
 
         [HttpGet("high-discount")]
-        public IActionResult GetHighDiscountCustomers([FromQuery] decimal minDiscount) => Ok(_customerRepository.GetHighDiscountCustomers(minDiscount));
+        public IActionResult GetHighDiscountCustomers([FromQuery] decimal minDiscount)
+        {
+            var result = _customerRepository.GetHighDiscountCustomers(minDiscount);
+            return Ok(SystemStatus.Success(result, $"Customers with discount >= {minDiscount}"));
+        }
 
-        [HttpGet("frequent-buyers")]
-        //public IActionResult GetCustomersByPurchaseFrequency([FromQuery] int minFrequency) => Ok(_customerRepository.GetCustomersByPurchaseFrequency(minFrequency));
+        //[HttpGet("frequent-buyers")]
+        //public IActionResult GetFrequentBuyers([FromQuery] int minFrequency)
+        //{
+        //    var result = _customerRepository.Get(minFrequency);
+        //    return Ok(SystemStatus.Success(result, $"Customers with frequency >= {minFrequency}"));
+        //}
 
         [HttpPost("update-discount")]
         public IActionResult UpdateCustomerDiscountRateWithLimit([FromQuery] int customerId, [FromQuery] decimal newRate, [FromQuery] decimal maxLimit)
         {
             bool updated = _customerRepository.UpdateCustomerDiscountRateWithLimit(customerId, newRate, maxLimit);
-            return updated ? Ok() : BadRequest("Discount rate exceeds allowed limit");
+            return updated
+                ? Ok(SystemStatus.Success($"Customer {customerId} discount updated successfully."))
+                : BadRequest(SystemStatus.Fail("Discount rate exceeds allowed limit"));
         }
     }
 

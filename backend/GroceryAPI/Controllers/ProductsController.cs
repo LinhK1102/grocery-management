@@ -1,12 +1,12 @@
 ﻿using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interfaces;
-using Repositories.Repositories;
+using Utility.Common;
 using System.Collections.Generic;
 
 namespace GroceryAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/products")]
     [ApiController]
     public class ProductsController : ControllerBase
     {
@@ -17,74 +17,83 @@ namespace GroceryAPI.Controllers
             _repo = repo;
         }
 
-        [HttpGet("GetAllProduct")]
-        public ActionResult<IEnumerable<Product>> GetAllProduct()
+        [HttpGet("get-all")]
+        public IActionResult GetAllProduct()
         {
             var products = _repo.GetAllProduct();
-            return Ok(products);
+            return Ok(SystemStatus.Success(products, "All products retrieved."));
         }
 
-        [HttpGet("GetProductById/{id}")]
-        public ActionResult<Product> GetProductById(int id)
+        [HttpGet("get-by-id/{id}")]
+        public IActionResult GetProductById(int id)
         {
             var product = _repo.GetProductById(id);
-            if (product == null) return NotFound();
-            return Ok(product);
+            return product == null
+                ? NotFound(SystemStatus.Fail($"Product with ID {id} not found."))
+                : Ok(SystemStatus.Success(product, "Product retrieved."));
         }
 
-        [HttpPost("CreateProduct")]
+        [HttpPost("create")]
         public IActionResult CreateProduct([FromBody] Product product)
         {
             _repo.AddProduct(product);
-            return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, product);
+            return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId },
+                SystemStatus.Success(product, "Product created successfully."));
         }
 
-        [HttpPut("UpdateProduct/{id}")]
+        [HttpPut("update/{id}")]
         public IActionResult UpdateProduct(int id, [FromBody] Product product)
         {
-            if (id != product.ProductId) return BadRequest();
+            if (id != product.ProductId)
+                return BadRequest(SystemStatus.Fail("Mismatched product ID."));
 
             _repo.UpdateProduct(product);
-            return NoContent();
+            return Ok(SystemStatus.Success(product, "Product updated successfully."));
         }
 
-        [HttpDelete("DeleteProduct/{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteProduct(int id)
         {
             _repo.DeleteProduct(id);
-            return NoContent();
+            return Ok(SystemStatus.Success($"Product with ID {id} deleted successfully."));
         }
 
         [HttpGet("low-stock")]
-        public ActionResult<IEnumerable<Product>> GetLowStockProducts(int threshold = 30)
+        public IActionResult GetLowStockProducts([FromQuery] int threshold = 30)
         {
             var products = _repo.GetLowStockProducts(threshold);
-            return Ok(products);
+            return Ok(SystemStatus.Success(products, $"Products with stock below {threshold} retrieved."));
         }
 
         [HttpGet("scan/{barcode}")]
-        public ActionResult<Product> GetProductByBarcode(string barcode)
+        public IActionResult GetProductByBarcode(string barcode)
         {
             var product = _repo.GetProductByBarcode(barcode);
-            if (product == null) return NotFound();
-            return Ok(product);
+            return product == null
+                ? NotFound(SystemStatus.Fail($"No product found with barcode {barcode}."))
+                : Ok(SystemStatus.Success(product, "Product found by barcode."));
         }
 
         [HttpPost("scan-adjust-stock")]
         public IActionResult AdjustStock([FromBody] BarcodeActionRequest request)
         {
             var product = _repo.GetProductByBarcode(request.Barcode);
-            if (product == null) return NotFound();
+            if (product == null)
+                return NotFound(SystemStatus.Fail("Product not found."));
 
             if (request.Action != "sell" && request.Action != "receive")
-                return BadRequest("Unknown action");
+                return BadRequest(SystemStatus.Fail("Invalid action. Use 'sell' or 'receive'."));
 
             _repo.AdjustStock(request.Barcode, request.Action, request.Quantity);
-            return Ok(product);
+            return Ok(SystemStatus.Success(product, $"Stock adjusted by {request.Action}."));
         }
 
-        [HttpGet("list-products/{supplierId}")]
-        public IActionResult GetSupplierProductList(int supplierId) => Ok(_repo.GetSupplierProductList(supplierId));
+        [HttpGet("supplier-products/{supplierId}")]
+        public IActionResult GetSupplierProductList(int supplierId)
+        {
+            var list = _repo.GetSupplierProductList(supplierId);
+            return Ok(SystemStatus.Success(list, $"Products from supplier ID {supplierId} retrieved."));
+        }
 
         public class BarcodeActionRequest
         {

@@ -1,11 +1,12 @@
 ﻿using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interfaces;
+using Utility.Common; // nếu bạn dùng SystemStatus để return ApiResponse
 
 namespace GroceryAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/orders")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderRepository _orderRepository;
@@ -15,43 +16,52 @@ namespace GroceryAPI.Controllers
             _orderRepository = orderRepository;
         }
 
-        [HttpGet("GetAllOrders")]
-        public IActionResult GetAllOrders() => Ok(_orderRepository.GetAllOrders());
+        [HttpGet("get-all")]
+        public IActionResult GetAllOrders()
+        {
+            var orders = _orderRepository.GetAllOrders();
+            return Ok(SystemStatus.Success(orders, "All orders retrieved."));
+        }
 
-        [HttpGet("GetOrderById/{id}")]
+        [HttpGet("get-by-id/{id}")]
         public IActionResult GetOrderById(int id)
         {
             var order = _orderRepository.GetOrderById(id);
-            return order == null ? NotFound() : Ok(order);
+            return order == null
+                ? NotFound(SystemStatus.Fail($"Order with ID {id} not found."))
+                : Ok(SystemStatus.Success(order, "Order retrieved successfully."));
         }
 
-        [HttpPost("CreateOrder")]
+        [HttpPost("create")]
         public IActionResult CreateOrder([FromBody] Order order)
         {
             _orderRepository.CreateOrder(order);
-            return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
+            return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId },
+                SystemStatus.Success(order, "Order created successfully."));
         }
 
-        [HttpPut("UpdateOrder/{id}")]
-        public IActionResult UpdateOrder(int id, Order order)
+        [HttpPut("update/{id}")]
+        public IActionResult UpdateOrder(int id, [FromBody] Order order)
         {
-            if (id != order.OrderId) return BadRequest();
+            if (id != order.OrderId)
+                return BadRequest(SystemStatus.Fail("Mismatched Order ID."));
+
             _orderRepository.UpdateOrder(order);
-            return NoContent();
+            return Ok(SystemStatus.Success(order, "Order updated successfully."));
         }
 
-        [HttpDelete("DeleteOrder/{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteOrder(int id)
         {
             _orderRepository.DeleteOrder(id);
-            return NoContent();
+            return Ok(SystemStatus.Success($"Order with ID {id} deleted successfully."));
         }
 
         [HttpGet("search")]
         public IActionResult SearchOrders([FromQuery] string keyword)
         {
-            return Ok(_orderRepository.SearchOrders(keyword));
+            var results = _orderRepository.SearchOrders(keyword);
+            return Ok(SystemStatus.Success(results, $"Orders matching '{keyword}' retrieved."));
         }
     }
-
 }
