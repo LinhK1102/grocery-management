@@ -1,0 +1,39 @@
+﻿<div class="d-flex flex-column p-3 bg-light" style="width: 250px; height: 100vh; position: fixed;">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4">WebApplication</span>
+    </a>
+    <hr />
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+            <a asp-controller="Home" asp-action="Index" class="nav-link active text-white bg-primary">
+                Home
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Home" asp-action="Privacy" class="nav-link text-dark">
+                Privacy
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Product" asp-action="Index" class="nav-link text-dark">
+                Products
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Order" asp-action="Index" class="nav-link text-dark">
+                Orders
+            </a>
+        </li>
+        <li>
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="#">Admin Panel</a>
+            }
+            @if (User.IsInRole("Employee"))
+            {
+                <button class="btn btn-success">Tạo đơn hàng</button>
+            }
+        </li>
+
+    </ul>
+</div>
