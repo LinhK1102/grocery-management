@@ -25,19 +25,19 @@ namespace Repositories.Repositories
         {
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
-        new Claim(ClaimTypes.Name, employee.EmployeeName),
-        new Claim(ClaimTypes.Role, "Employee") // hoặc employee.Role nếu có
-    };
+                new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
+                new Claim(ClaimTypes.Name, employee.EmployeeName),
+                new Claim(ClaimTypes.Role, "Employee")
+            };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "your_issuer",
-                audience: "your_audience",
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(12),
                 signingCredentials: creds
             );
 

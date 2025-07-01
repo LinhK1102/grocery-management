@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +15,34 @@ namespace DataAccess.DAO
 
         public List<RetailOutlet> GetAllRetailOutlets() => _context.RetailOutlets.ToList();
         public RetailOutlet GetRetailOutletById(int id) => _context.RetailOutlets.Find(id);
-        public void CreateRetailOutlet(RetailOutlet ro) { _context.RetailOutlets.Add(ro); _context.SaveChanges(); }
-        public void UpdateRetailOutlet(RetailOutlet ro) { _context.RetailOutlets.Update(ro); _context.SaveChanges(); }
-        public void DeleteRetailOutlet(int id)
+        public RetailOutlet GetRetailOutletByRetailOutletName(string retailName)
+        {
+            return _context.RetailOutlets.FirstOrDefault(ro => ro.RetailOutletName == retailName);
+        }
+        public RetailOutlet CreateRetailOutlet(RetailOutlet ro)
+        {
+            _context.RetailOutlets.Add(ro);
+            _context.SaveChanges();
+            return ro;
+        }
+        public RetailOutlet UpdateRetailOutlet(RetailOutlet ro) 
+        { 
+            _context.RetailOutlets.Update(ro); 
+            _context.SaveChanges();
+            return ro;
+        }
+        public bool DeleteRetailOutlet(int id)
         {
             var ro = _context.RetailOutlets.Find(id);
-            if (ro != null) { _context.RetailOutlets.Remove(ro); _context.SaveChanges(); }
+            if (ro != null) { _context.RetailOutlets.Remove(ro); _context.SaveChanges(); return false; }
+            return true;
         }
+        public List<Employee> GetEmployeesByOutlet(int outletId)
+        {
+            return _context.Employees
+                           .Where(e => e.RetailOutletId == outletId)
+                           .ToList();
+        }
+
     }
 }

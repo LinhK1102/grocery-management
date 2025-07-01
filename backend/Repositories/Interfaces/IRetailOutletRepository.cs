@@ -11,8 +11,9 @@ namespace Repositories.Interfaces
     {
         List<RetailOutlet> GetAllRetailOutlets();
         RetailOutlet GetRetailOutletById(int id);
-        void CreateRetailOutlet(RetailOutlet ro);
-        void UpdateRetailOutlet(RetailOutlet ro);
+        RetailOutlet CreateRetailOutlet(RetailOutlet ro);
+        RetailOutlet UpdateRetailOutlet(RetailOutlet ro);
         void DeleteRetailOutlet(int id);
+        List<Employee> GetEmployeesByOutlet(int outletId);
     }
 }

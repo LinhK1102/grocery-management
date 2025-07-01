@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Mapper;
 
 namespace Repositories.Repositories
 {
@@ -15,10 +16,12 @@ namespace Repositories.Repositories
     {
         private readonly EmployeeDAO _dao;
         private readonly IJwtTokenGenerator _tokenGenerator;
-        public EmployeeRepository(EmployeeDAO dao, IJwtTokenGenerator tokenGenerator)
+        private readonly IRetailOutletRepository _retailOutletRepo;
+        public EmployeeRepository(EmployeeDAO dao, IJwtTokenGenerator tokenGenerator, IRetailOutletRepository retailOutletRepo)
         {
             _dao = dao;
             _tokenGenerator = tokenGenerator; // <- dòng này đảm bảo biến tồn tại
+            _retailOutletRepo = retailOutletRepo;
         }
 
         public List<Employee> GetAllEmployees() => _dao.GetAllEmployees();
@@ -36,14 +39,12 @@ namespace Repositories.Repositories
                 };
             }
 
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            request.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            var employee = new Employee
-            {
-                EmployeeName = request.EmployeeName,
-                EmployeeEmail = request.Email,
-                EmployeeEmailTokenPass = hashedPassword
-            };
+            //unassign retail outlet
+            var retailOutlet = _retailOutletRepo.CreateRetailOutlet(new RetailOutlet());
+
+            var employee = EmployeeMapper.ToEmployeeEntity(request, retailOutlet.RetailOutletId);
 
             await _dao.AddAsync(employee);
 
@@ -58,7 +59,7 @@ namespace Repositories.Repositories
                 };
             }
 
-            //var token = _tokenGenerator.GenerateToken(registeredEmployee); // Nếu có JWT
+            var token = _tokenGenerator.GenerateToken(registeredEmployee); // Nếu có JWT
 
             return new ApiResponse<EmployeeRegisterResponse>
             {
@@ -69,7 +70,8 @@ namespace Repositories.Repositories
                     FullName = registeredEmployee.EmployeeName,
                     Email = registeredEmployee.EmployeeEmail,
                     Password = registeredEmployee.EmployeeEmailTokenPass,
-                    Role = "Employee Role" // Hoặc lấy từ DB
+                    Role = "Employee Role", // Hoặc lấy từ DB
+                    Token = token
                 }
             };
         }
@@ -124,7 +126,7 @@ namespace Repositories.Repositories
             }
 
             // Tạo token nếu có
-            //var token = _tokenGenerator.GenerateToken(employee);
+            var token = _tokenGenerator.GenerateToken(employee);
 
             return new ApiResponse<EmployeeLoginResponse>
             {

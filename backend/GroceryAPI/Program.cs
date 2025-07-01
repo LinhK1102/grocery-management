@@ -8,6 +8,9 @@ using Repositories.Interfaces;
 using Repositories.Repositories;
 using BusinessObjects.Commons;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -41,6 +44,7 @@ builder.Services.AddScoped<RetailOutletDAO>();
 builder.Services.AddScoped<SupplierDAO>();
 builder.Services.AddScoped<WarehouseDAO>();
 builder.Services.AddScoped<CategoryDAO>();
+builder.Services.AddScoped<JwtTokenGenerator>();
 
 
 // --- Repositories: Business logic layer ---
@@ -88,6 +92,21 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
 var app = builder.Build();
 
