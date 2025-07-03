@@ -1,0 +1,42 @@
+﻿@model WebApplication.Models.Dto.ProductDto
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<h2>Edit Product</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="ProductId" />
+
+    <div class="form-group">
+        <label asp-for="ProductName"></label>
+        <input asp-for="ProductName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="CategoryId"></label>
+        <input asp-for="CategoryId" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="SupplierId"></label>
+        <input asp-for="SupplierId" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="UnitsInStock"></label>
+        <input asp-for="UnitsInStock" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="UnitPrice"></label>
+        <input asp-for="UnitPrice" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="BarcodeValue"></label>
+        <input asp-for="BarcodeValue" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="ExpiryDuration"></label>
+        <input asp-for="ExpiryDuration" type="date" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Update</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

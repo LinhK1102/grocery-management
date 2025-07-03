@@ -20,7 +20,7 @@ namespace Repositories.Repositories
         public EmployeeRepository(EmployeeDAO dao, IJwtTokenGenerator tokenGenerator, IRetailOutletRepository retailOutletRepo)
         {
             _dao = dao;
-            _tokenGenerator = tokenGenerator; // <- dòng này đảm bảo biến tồn tại
+            _tokenGenerator = tokenGenerator; 
             _retailOutletRepo = retailOutletRepo;
         }
 
@@ -136,7 +136,7 @@ namespace Repositories.Repositories
                 {
                     EmployeeId = employee.EmployeeId,
                     FullName = employee.EmployeeName,
-                    Token = "token blank",
+                    Token = token,
                     Role = "Employee"
                 }
             };

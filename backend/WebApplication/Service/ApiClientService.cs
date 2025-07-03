@@ -37,24 +37,5 @@ namespace WebApplication.Service
             return client;
         }
 
-        // Ví dụ: Gọi API GetAllProduct
-        public async Task<List<ProductDto>> GetAllProductsAsync()
-        {
-            var client = CreateClient();
-            var response = await client.GetAsync("/api/Products/GetAllProduct");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                var products = JsonSerializer.Deserialize<List<ProductDto>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                return products ?? new List<ProductDto>();
-            }
-
-            return new List<ProductDto>();
-        }
     }
 }

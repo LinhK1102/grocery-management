@@ -26,10 +26,11 @@ namespace BusinessObjects.Entities
         public Supplier Supplier { get; set; }
 
         [JsonIgnore]
-        public ICollection<OrderDetail> OrderDetails { get; set; }
+        public ICollection<Order> Order { get; set; }
 
         [JsonIgnore]
         public ICollection<ProductWarehouse> ProductWarehouses { get; set; }
+        public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 
 

@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using PdfSharpCore.Drawing.BarCodes;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -45,6 +46,7 @@ builder.Services.AddScoped<SupplierDAO>();
 builder.Services.AddScoped<WarehouseDAO>();
 builder.Services.AddScoped<CategoryDAO>();
 builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<ItemDAO>();
 
 
 // --- Repositories: Business logic layer ---
@@ -56,6 +58,9 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IRetailOutletRepository, RetailOutletRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IBarcodeRepository, BarcodeRepository>();
+
 
 // --- Repositories: Event handling ---
 builder.Services.AddScoped<INotificationService, NotificationService>();

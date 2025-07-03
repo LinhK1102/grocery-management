@@ -1,0 +1,114 @@
+﻿@model List<WebApplication.Models.Dto.ProductDto>
+@{
+    ViewData["Title"] = "Product List";
+    var page = (int)ViewBag.Page;
+    var totalPages = (int)ViewBag.TotalPages;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">Product List</h2>
+
+    <form method="get" class="mb-3 d-flex">
+        <input type="text" name="search" class="form-control me-2" placeholder="Search by name..." value="@ViewBag.CurrentSearch" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div class="mb-3">
+        <a class="btn btn-success" asp-action="Create">+ Add New Product</a>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Unit Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.ProductId</td>
+                        <td>@p.ProductName</td>
+                        <td>@p.UnitPrice.ToString("C")</td>
+                        <td>@p.UnitsInStock</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@p.ProductId" class="btn btn-sm btn-info">View</a>
+                            <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button"
+                                    class="btn btn-sm btn-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-product-id="@p.ProductId"
+                                    data-product-name="@p.ProductName">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center">No products found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == page ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.CurrentSearch">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" asp-action="DeleteConfirmed">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong id="productNameToDelete"></strong>?</p>
+                    <input type="hidden" id="productIdToDelete" name="ProductId" />
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const productId = button.getAttribute('data-product-id');
+            const productName = button.getAttribute('data-product-name');
+
+            const productNameSpan = document.getElementById('productNameToDelete');
+            const productIdInput = document.getElementById('productIdToDelete');
+
+            productNameSpan.textContent = productName;
+            productIdInput.value = productId;
+        });
+    </script>
+}

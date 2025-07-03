@@ -1,4 +1,6 @@
-﻿namespace WebApplication.Models
+﻿using System.Text.Json.Serialization;
+
+namespace WebApplication.Models
 {
     public class ApiResponse<T>
     {
@@ -6,5 +8,4 @@
         public string Message { get; set; }
         public T Data { get; set; }
     }
-
 }

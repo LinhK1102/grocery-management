@@ -4,37 +4,63 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - WebApplication</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
-
 </head>
 <body>
     <div class="d-flex">
-        @Html.Partial("_Sidebar")
+        <!-- Sidebar -->
+        <div id="sidebar" class="bg-light border-end shadow" style="width: 250px; transition: all 0.3s;">
+            @Html.Partial("_Sidebar")
+        </div>
 
-        <div class="flex-grow-1" style="margin-left: 250px;">
-            @Html.Partial("_Header")
+        <!-- Main -->
+        <div class="flex-grow-1" style="min-height: 100vh; display: flex; flex-direction: column;">
+            <!-- Toggle Button -->
+            <header class="d-flex align-items-center justify-content-between px-4 py-2 border-bottom bg-white shadow-sm">
+                <button class="btn btn-outline-primary d-md-none" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h5 class="mb-0">@ViewData["Title"]</h5>
+            </header>
 
-            <div class="container">
-                <main role="main" class="pb-3">
-                    @RenderBody()
-                </main>
-            </div>
+            <main role="main" class="flex-fill px-4 pt-3">
+                @RenderBody()
+            </main>
 
-            <footer class="border-top footer text-muted mt-3">
-                <div class="container">
-                    &copy; 2025 - WebApplication - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <footer class="border-top footer text-muted py-3 mt-auto px-4">
+                <div class="text-center">
+                    &copy; 2025 - WebApplication - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
                 </div>
             </footer>
         </div>
     </div>
 
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+    @section Scripts {
+        <script>
+            document.getElementById('sidebarToggle')?.addEventListener('click', function () {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.style.marginLeft === '-250px') {
+                    sidebar.style.marginLeft = '0';
+                } else {
+                    sidebar.style.marginLeft = '-250px';
+                }
+            });
 
+            // Auto-collapse sidebar on small screens
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').style.marginLeft = '-250px';
+            }
+        </script>
+    }
+
+</body>
 </html>

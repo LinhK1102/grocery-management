@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebApplication.Service;
+using WebApplication.Services;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,20 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Gọi API + lấy context
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<ApiClientService>();
+builder.Services.AddScoped<AuthApiService>();
+builder.Services.AddScoped<BarcodeApiService>();
+builder.Services.AddScoped<CustomerApiService>();
+builder.Services.AddScoped<EmployeeApiService>();
+builder.Services.AddScoped<OrderApiService>();
+builder.Services.AddScoped<OrderDetailApiService>();
+builder.Services.AddScoped<ProductApiService>();
+builder.Services.AddScoped<RetailOutletApiService>();
+builder.Services.AddScoped<SupplierApiService>();
+builder.Services.AddScoped<WarehouseApiService>();
+// ... các service khác
+
 
 var app = builder.Build();
 
@@ -40,6 +54,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}");
+
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.Run();

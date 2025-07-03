@@ -20,6 +20,7 @@ namespace DataAccess.DAO
             _context.Products
             .Include(c => c.Category)
             .Include(od => od.OrderDetails)
+            .Include(i => i.Items)
             .FirstOrDefault(p => p.ProductId == id);
 
         public Product? AddProduct(Product product)
