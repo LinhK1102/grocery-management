@@ -1,0 +1,14 @@
+﻿@using WebApplication.Models.Dto
+@model CategoryDto
+@{
+    ViewData["Title"] = "Delete Category";
+}
+<h2 class="text-danger">Delete Category</h2>
+<div class="alert alert-warning">
+    <p>Are you sure you want to delete <strong>@Model.CategoryName</strong>?</p>
+</div>
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="CategoryId" />
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

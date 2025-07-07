@@ -2,6 +2,7 @@
 using DataAccess.DAO;
 using Repositories.Interfaces;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Repositories.Repositories
 {
@@ -23,10 +24,10 @@ namespace Repositories.Repositories
 
         public List<Product> GetAllProduct() => _dao.GetAllProduct();
         public Product GetProductById(int id) => _dao.GetProductById(id);
-        public Product AddProduct(Product product)
+        public async Task<Product> AddProduct(Product product)
         {
             if (product.CategoryId == 0)
-                product.CategoryId = _categoryDao.GetOrCreateUncategorizedCategoryId(product.Category);
+                product.CategoryId = _categoryDao.GetOrCreateUncategorizedCategoryId();
 
             if (product.SupplierId == 0)
                 product.SupplierId = _supplierDao.GetOrCreateUnknownSupplierId(product.Supplier);
@@ -63,5 +64,10 @@ namespace Repositories.Repositories
         public void AdjustStock(string barcode, string action, int quantity) => _dao.AdjustStock(barcode, action, quantity);
 
         public List<Product> GetSupplierProductList(int supplierId) => _dao.GetSupplierProductList(supplierId);
+
+        Product IProductRepository.AddProduct(Product product)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

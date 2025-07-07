@@ -69,24 +69,33 @@ namespace DataAccess.DAO
                 .ToList();
         }
 
-        private int? _uncategorizedId;
 
         public Category GetCategoryByName(string categoryName)
         {
             return _context.Categories.FirstOrDefault(c => c.CategoryName == categoryName);
         }
-        public int GetOrCreateUncategorizedCategoryId(Category category)
+
+        private int? _uncategorizedId;
+        public int GetOrCreateUncategorizedCategoryId()
         {
-            if (_uncategorizedId.HasValue) return _uncategorizedId.Value;
+            if (_uncategorizedId.HasValue)
+                return _uncategorizedId.Value;
 
-            var existing = GetCategoryByName(category.CategoryName);
-            if (existing != null) return (_uncategorizedId = existing.CategoryId).Value;
+            var existing = GetCategoryByName("Uncategorized");
+            if (existing != null)
+                return (_uncategorizedId = existing.CategoryId).Value;
 
-            var uncategorized = AddCategory(new Category { CategoryName = "Uncategorized" });
-            if (uncategorized == null)
+            var created = AddCategory(new Category { CategoryName = "Uncategorized" });
+            if (created == null)
                 throw new Exception("Failed to create 'Uncategorized' category.");
 
-            return (_uncategorizedId = uncategorized.CategoryId).Value;
+            return (_uncategorizedId = created.CategoryId).Value;
+        }
+
+
+        public bool IsUncategorizedCategoryExists()
+        {
+            return GetCategoryByName("Uncategorized") != null;
         }
 
     }

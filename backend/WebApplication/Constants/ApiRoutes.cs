@@ -88,5 +88,13 @@
             public const string Update = "/api/warehouses/update/{0}";
             public const string Delete = "/api/warehouses/delete/{0}";
         }
+
+        public static class Category
+        {
+            public const string GetAll = "/api/categories/get-all";
+            public const string GetById = "/api/categories/get-by-id/{0}";
+            public const string Create = "/api/categories/create-or-get";
+            public const string Update = "/api/categories/update/{id}";
+        }
     }
 }

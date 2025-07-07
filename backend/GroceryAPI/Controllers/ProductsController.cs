@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Repositories.Interfaces;
 using Utility.Common;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.SignalR;
+using GroceryAPI.Hubs;
 
 namespace GroceryAPI.Controllers
 {
@@ -11,10 +13,12 @@ namespace GroceryAPI.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _repo;
+        private readonly IHubContext<NotificationHubs> _notificationHub; 
 
-        public ProductsController(IProductRepository repo)
+        public ProductsController(IProductRepository repo, IHubContext<NotificationHubs> notificationHub)
         {
             _repo = repo;
+            _notificationHub = notificationHub;
         }
 
         [HttpGet("get-all")]
@@ -42,19 +46,26 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public IActionResult UpdateProduct(int id, [FromBody] Product product)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
         {
             if (id != product.ProductId)
                 return BadRequest(SystemStatus.Fail("Mismatched product ID."));
 
             _repo.UpdateProduct(product);
+
+            // Notify clients about the product update
+            await _notificationHub.Clients.All.SendAsync("ProductUpdated", product);
+
             return Ok(SystemStatus.Success(product, "Product updated successfully."));
         }
+
 
         [HttpDelete("delete/{id}")]
         public IActionResult DeleteProduct(int id)
         {
             _repo.DeleteProduct(id);
+            // Notify clients about the product deletion
+            _notificationHub.Clients.All.SendAsync("ProductDeleted", id);
             return Ok(SystemStatus.Success($"Product with ID {id} deleted successfully."));
         }
 
@@ -85,6 +96,13 @@ namespace GroceryAPI.Controllers
                 return BadRequest(SystemStatus.Fail("Invalid action. Use 'sell' or 'receive'."));
 
             _repo.AdjustStock(request.Barcode, request.Action, request.Quantity);
+            // Notify clients about the stock adjustment
+            _notificationHub.Clients.All.SendAsync("StockAdjusted", new
+            {
+                Barcode = request.Barcode,
+                Action = request.Action,
+                Quantity = request.Quantity
+            });
             return Ok(SystemStatus.Success(product, $"Stock adjusted by {request.Action}."));
         }
 

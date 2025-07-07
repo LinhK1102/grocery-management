@@ -47,6 +47,7 @@ builder.Services.AddScoped<WarehouseDAO>();
 builder.Services.AddScoped<CategoryDAO>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<ItemDAO>();
+builder.Services.AddScoped<CategoryDAO>();
 
 
 // --- Repositories: Business logic layer ---
@@ -60,6 +61,7 @@ builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IBarcodeRepository, BarcodeRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 
 // --- Repositories: Event handling ---
@@ -138,8 +140,11 @@ else
     });
 }
 
-
-app.MapFallbackToFile("index.html");
+using (var scope = app.Services.CreateScope())
+{
+    var categoryRepo = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
+    await categoryRepo.EnsureDefaultCategoriesAsync();
+}
 
 app.UseCors(MyAllowSpecificOrigins);
 

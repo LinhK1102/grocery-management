@@ -1,0 +1,17 @@
+﻿@using WebApplication.Models.Dto
+@model CategoryDto
+@{
+    ViewData["Title"] = "Category Details";
+}
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h4>@Model.CategoryName</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>ID:</strong> @Model.CategoryId</p>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Edit" asp-route-id="@Model.CategoryId" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>

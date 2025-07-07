@@ -32,6 +32,7 @@ builder.Services.AddScoped<ProductApiService>();
 builder.Services.AddScoped<RetailOutletApiService>();
 builder.Services.AddScoped<SupplierApiService>();
 builder.Services.AddScoped<WarehouseApiService>();
+builder.Services.AddScoped<CategoryApiService>();
 // ... các service khác
 
 
