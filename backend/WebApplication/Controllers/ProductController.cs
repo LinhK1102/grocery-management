@@ -44,6 +44,8 @@ public class ProductController : Controller
     public async Task<IActionResult> Details(int id)
     {
         var product = await _productApiService.GetByIdAsync(id);
+        product.Category = await _categoryApiService.GetByIdAsync(product.CategoryId);
+        product.Supplier = await _supplierApiService.GetByIdAsync(product.SupplierId);
         if (product == null) return NotFound(); // <-- render view
         return View(product);
     }

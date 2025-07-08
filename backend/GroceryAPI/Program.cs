@@ -13,6 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using PdfSharpCore.Drawing.BarCodes;
 using System;
+using Repositories.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -52,7 +55,8 @@ builder.Services.AddScoped<CategoryDAO>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<ItemDAO>();
 builder.Services.AddScoped<CategoryDAO>();
-
+builder.Services.AddScoped<GoogleDriveService>();
+builder.Services.AddScoped<GoogleAccessTokenService>();
 
 // --- Repositories: Business logic layer ---
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -66,6 +70,8 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IBarcodeRepository, BarcodeRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IGoogleSheetsService, GoogleSheetsService>();
+
 
 
 // --- Repositories: Event handling ---
@@ -119,6 +125,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.Scope.Add("https://www.googleapis.com/auth/drive.metadata.readonly");
+    options.SaveTokens = true;
+});
+
+
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 var baseDir = AppContext.BaseDirectory;
