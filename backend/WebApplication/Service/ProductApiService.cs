@@ -2,6 +2,7 @@
 using WebApplication.Constants;
 using WebApplication.Models.Dto;
 using WebApplication.Service;
+using System.Text.Json;
 
 namespace WebApplication.Services
 {
@@ -32,20 +33,30 @@ namespace WebApplication.Services
         }
 
 
-        public async Task<bool> CreateAsync(ProductDto product)
+        public async Task<bool> CreateAsync(ProductUpdateDto product)
         {
             var client = CreateClient();
             var res = await client.PostAsJsonAsync(ApiRoutes.Product.Create, product);
             return res.IsSuccessStatusCode;
         }
 
-        public async Task<bool> UpdateAsync(int id, ProductDto product)
+        public async Task<bool> UpdateAsync(int id, ProductUpdateDto dto)
         {
             var client = CreateClient();
             var url = string.Format(ApiRoutes.Product.Update, id);
-            var res = await client.PutAsJsonAsync(url, product);
+
+            var res = await client.PutAsJsonAsync(url, dto); // ✅ không serialize thủ công
+
+            if (!res.IsSuccessStatusCode)
+            {
+                var errorJson = await res.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Error Response:");
+                Console.WriteLine(errorJson); // <- xem nội dung lỗi
+            }
+
             return res.IsSuccessStatusCode;
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {

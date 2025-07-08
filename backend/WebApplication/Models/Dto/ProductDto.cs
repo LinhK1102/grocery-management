@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Utility.Common;
 
@@ -25,6 +26,7 @@ namespace WebApplication.Models.Dto
         public decimal UnitPrice { get; set; }
 
         [JsonPropertyName("barcodeValue")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Barcode must contain digits only.")]
         public string BarcodeValue { get; set; }
 
         [JsonPropertyName("expiryDuration")]
@@ -43,6 +45,10 @@ namespace WebApplication.Models.Dto
 
         [JsonIgnore]
         public SupplierDto Supplier { get; set; }
+         [JsonIgnore]
+        public ItemDto Item { get; set; }
+         [JsonIgnore]
+        public OrderDetailDto OrderDetail { get; set; }
 
         [JsonIgnore]
         public ICollection<ProductWarehouseDto> ProductWarehouses { get; set; } = new List<ProductWarehouseDto>();

@@ -4,8 +4,10 @@ using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Common;
 
 namespace Repositories.Repositories
 {
@@ -24,18 +26,22 @@ namespace Repositories.Repositories
                 throw new Exception($"Warehouse with name '{w.WarehouseName}' already exists.");
             }
 
-            // Check if the warehouse name is "Undefinded" and handle it accordingly
-            existingWarehouse = _dao.GetWarehouseByName("Undefinded");
+            // Check if the warehouse ID is 0 and the default "Undefinded" warehouse does not exist
+            existingWarehouse = _dao.GetWarehouseByName(UtitlityConstant.Undefined);
             if (w.WarehouseId == 0 && existingWarehouse == null)
             {
                 return _dao.CreateWarehouse(w);
             }
 
-            // If the warehouse name is not "Undefinded", create a new warehouse
+            // If the warehouse name is not "Undefinded" but it already exists, create a new default "Undefinded" warehouse
             else if (existingWarehouse != null)
-                return _dao.CreateWarehouse(new Warehouse { WarehouseName = "Undefinded" });
+            {
+                return _dao.CreateWarehouse(new Warehouse { WarehouseName = UtitlityConstant.Undefined });
+            }
+
             return null;
         }
+
         public Warehouse UpdateWarehouse(Warehouse w)
         {
             return _dao.UpdateWarehouse(w);
@@ -57,21 +63,23 @@ namespace Repositories.Repositories
         }
         public ProductWarehouse CreateProductWarehouse(Product product, Warehouse warehouse)
         {
-            if(product == null || warehouse == null)
+            if (product == null) //check product is sent
             {
-                throw new ArgumentNullException("Product or Warehouse cannot be null.");
+                throw new ArgumentNullException("Product cannot be null.");
             }
-            var existingProductWarehouse = _dao.GetProductWarehouse(product, warehouse);
-            if (existingProductWarehouse != null)
+            else if (product != null && warehouse != null) // check exist relationshop
             {
-                throw new Exception($"Product {product.ProductName} already exists in warehouse {warehouse.WarehouseName}.");
+                var existingProductWarehouse = _dao.GetProductWarehouse(product, warehouse);
+                if (existingProductWarehouse != null)
+                    throw new Exception($"Product {product.ProductName} already exists in warehouse {warehouse.WarehouseName}.");
             }
-            var existingWarehouse = _dao.GetWarehouseById(warehouse.WarehouseId);
-            if (warehouse.WarehouseId == 0 && existingWarehouse != null)
-            {
-                warehouse = CreateWarehouse(warehouse);
-            }
-            return _dao.CreateProductWarehouse(product, warehouse);
+
+            //create new Undefined warehouse if not exists
+            var existingWarehouse = _dao.GetWarehouseByName(UtitlityConstant.Undefined);
+            warehouse = (existingWarehouse != null)
+                ? existingWarehouse
+                : CreateWarehouse(warehouse);
+            return _dao.CreateProductWarehouse(product, existingWarehouse);
         }
 
         public List<Warehouse> GetWarehousesByItemId(string itemId)
@@ -86,12 +94,12 @@ namespace Repositories.Repositories
 
         public ProductWarehouse UpdateProductWarehouse(Product product, Warehouse warehouse, int quantity)
         {
-           return _dao.UpdateProductWarehouse(product, warehouse, quantity);
+            return _dao.UpdateProductWarehouse(product, warehouse, quantity);
         }
 
         public bool DeleteProductWarehouse(Product product, Warehouse warehouse)
         {
-           return _dao.DeleteProductWarehouse(product, warehouse);
+            return _dao.DeleteProductWarehouse(product, warehouse);
         }
 
         public List<Product> GetProductsInWarehouse(int warehouseId)

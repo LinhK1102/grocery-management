@@ -24,11 +24,23 @@ namespace WebApplication.Controllers.Authentication
         }
 
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View();
+        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             if (!ModelState.IsValid)
                 return View(model);
 

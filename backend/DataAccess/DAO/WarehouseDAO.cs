@@ -12,7 +12,7 @@ namespace DataAccess.DAO
         private readonly ApplicationDbContext _context;
         public WarehouseDAO(ApplicationDbContext context) => _context = context;
 
-        public List<Warehouse> GetAllWarehouses() => _context.Warehouses.ToList();
+        public List<Warehouse> GetAllWarehouses() => _context.Warehouses.OrderBy(w => w.WarehouseId).ToList();
         public Warehouse GetWarehouseById(int id) => _context.Warehouses.Find(id);
         public Warehouse CreateWarehouse(Warehouse w) { _context.Warehouses.Add(w); _context.SaveChanges(); return w; }
         public Warehouse UpdateWarehouse(Warehouse w) { _context.Warehouses.Update(w); _context.SaveChanges(); return w; }
@@ -91,7 +91,7 @@ namespace DataAccess.DAO
         public Warehouse GetWarehouseByName(string name)
         {
             return _context.Warehouses
-                .FirstOrDefault(w => w.WarehouseName.Equals(name, StringComparison.OrdinalIgnoreCase));
+                  .FirstOrDefault(w => w.WarehouseName.ToUpper() == name.ToUpper());
         }
     }
 }

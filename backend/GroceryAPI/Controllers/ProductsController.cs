@@ -5,7 +5,7 @@ using Utility.Common;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using GroceryAPI.Hubs;
-
+using BusinessObjects.DTOs;
 namespace GroceryAPI.Controllers
 {
     [Route("api/products")]
@@ -46,7 +46,7 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDto product)
         {
             if (id != product.ProductId)
                 return BadRequest(SystemStatus.Fail("Mismatched product ID."));

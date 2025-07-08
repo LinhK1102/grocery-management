@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Entities;
+﻿using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,13 +39,26 @@ namespace DataAccess.DAO
             }
         }
 
-        public Product UpdateProduct(Product product)
+        public Product UpdateProduct(ProductUpdateDto updatedProduct)
         {
             try
             {
-                _context.Products.Update(product);
+                var existingProduct = _context.Products.FirstOrDefault(p => p.ProductId == updatedProduct.ProductId);
+                if (existingProduct == null) return null;
+
+                // ⚠️ Chỉ cập nhật các field đơn giản
+                existingProduct.ProductName = updatedProduct.ProductName;
+                existingProduct.CategoryId = updatedProduct.CategoryId;
+                existingProduct.SupplierId = updatedProduct.SupplierId;
+                existingProduct.UnitsInStock = updatedProduct.UnitsInStock;
+                existingProduct.UnitPrice = updatedProduct.UnitPrice;
+                existingProduct.BarcodeValue = updatedProduct.BarcodeValue;
+                existingProduct.ExpiryDuration = updatedProduct.ExpiryDuration;
+
+                _context.Products.Update(existingProduct);
                 _context.SaveChanges();
-                return product;
+
+                return existingProduct;
             }
             catch (Exception ex)
             {

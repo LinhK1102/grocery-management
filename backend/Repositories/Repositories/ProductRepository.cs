@@ -1,8 +1,10 @@
-﻿using BusinessObjects.Entities;
+﻿using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
 using DataAccess.DAO;
 using Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Utility.Common;
 
 namespace Repositories.Repositories
 {
@@ -26,35 +28,70 @@ namespace Repositories.Repositories
         public Product GetProductById(int id) => _dao.GetProductById(id);
         public async Task<Product> AddProduct(Product product)
         {
+            if (product == null)
+                throw new ArgumentNullException(nameof(product));
+
+            // Ensure CategoryId and SupplierId are valid
             if (product.CategoryId == 0)
                 product.CategoryId = _categoryDao.GetOrCreateUncategorizedCategoryId();
 
             if (product.SupplierId == 0)
                 product.SupplierId = _supplierDao.GetOrCreateUnknownSupplierId(product.Supplier);
 
-            if (product.Items == null && product.Items.Count <= 0)
-                product.Items = product.Items
-                                .Select(item =>
-                                {
-                                    item.ProductId = product.ProductId;
-                                    return _itemRepository.CreateItem(item);
-                                })
-                                .Where(added => added != null)
-                                .ToList();
+            // Remove navigation properties to avoid EF tracking issues
+            product.Category = null;
+            product.Supplier = null;
 
-            if (!(product.ProductWarehouses?.Any() ?? false))
+            // Detach items before saving product
+            var detachedItems = product.Items?.ToList() ?? new List<Item>();
+            product.Items = null;
+
+            // Save product to DB to generate ProductId
+            var savedProduct =  _dao.AddProduct(product);
+
+            // Save items if any
+            if (detachedItems.Any())
             {
-                var created = _warehouseRepository.CreateProductWarehouse(product, new Warehouse { WarehouseId = 0 });
-                product.ProductWarehouses = created != null
-                    ? new List<ProductWarehouse> { created }
-                    : [];
+                savedProduct.Items = detachedItems
+                    .Select(item =>
+                    {
+                        item.ProductId = savedProduct.ProductId;
+                        return _itemRepository.CreateItem(item);
+                    })
+                    .Where(created => created != null)
+                    .ToList();
             }
 
+            // Ensure product-warehouse relation is created only if not exists
+            if (savedProduct.ProductWarehouses == null || !savedProduct.ProductWarehouses.Any())
+            {
+                var defaultWarehouse = _warehouseRepository.GetWarehouseByName(UtitlityConstant.Undefined);
+                if (defaultWarehouse == null)
+                {
+                    defaultWarehouse = _warehouseRepository.CreateWarehouse(new Warehouse
+                    {
+                        WarehouseName = UtitlityConstant.Undefined,
+                        WarehouseLocation = UtitlityConstant.Unknown
+                    });
+                }
 
-            var status = _dao.AddProduct(product);
-            return product;
+                try
+                {
+                    var createdLink = _warehouseRepository.CreateProductWarehouse(savedProduct, defaultWarehouse);
+                    savedProduct.ProductWarehouses = new List<ProductWarehouse> { createdLink };
+                }
+                catch (Exception ex)
+                {
+                    // Log or handle duplicate relation if needed
+                    Console.WriteLine($"Warehouse link skipped: {ex.Message}");
+                }
+            }
+
+            return savedProduct;
         }
-        public Product UpdateProduct(Product product) => _dao.UpdateProduct(product);
+
+
+        public Product UpdateProduct(ProductUpdateDto product) => _dao.UpdateProduct(product);
         public bool DeleteProduct(int id) => _dao.DeleteProduct(id);
 
         public Product GetProductByBarcode(string barcode) => _dao.GetProductByBarcode(barcode);
@@ -65,9 +102,5 @@ namespace Repositories.Repositories
 
         public List<Product> GetSupplierProductList(int supplierId) => _dao.GetSupplierProductList(supplierId);
 
-        Product IProductRepository.AddProduct(Product product)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

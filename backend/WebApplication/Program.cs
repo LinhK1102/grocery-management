@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 using WebApplication.Service;
 using WebApplication.Services;
 
@@ -8,6 +10,22 @@ var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value.Errors.Count > 0)
+                .Select(e => new {
+                    Field = e.Key,
+                    Errors = e.Value.Errors.Select(err => err.ErrorMessage).ToArray()
+                });
+
+            return new BadRequestObjectResult(new { message = "Validation failed", errors });
+        };
+    });
+
 
 // Cookie Authentication cho WebApp
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

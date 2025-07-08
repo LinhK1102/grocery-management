@@ -1,42 +1,172 @@
 ﻿@model WebApplication.Models.Dto.ProductDto
 @{
     ViewData["Title"] = "Edit Product";
+    var categoryJson = ViewBag.CategoryJson;
+    var supplierJson = ViewBag.SupplierJson;
 }
 
-<h2>Edit Product</h2>
+<div class="container mt-4">
+    <div class="bg-white rounded-4 shadow-lg p-4">
+        <h3 class="mb-4 text-primary">
+            <i class="bi bi-pencil-square me-2"></i> Edit Product
+        </h3>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="ProductId" />
+        <form asp-action="Edit" asp-controller="Product" asp-route-id="@Model.ProductId" method="post">
+            <input type="hidden" asp-for="ProductId" />
 
-    <div class="form-group">
-        <label asp-for="ProductName"></label>
-        <input asp-for="ProductName" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="CategoryId"></label>
-        <input asp-for="CategoryId" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="SupplierId"></label>
-        <input asp-for="SupplierId" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="UnitsInStock"></label>
-        <input asp-for="UnitsInStock" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="UnitPrice"></label>
-        <input asp-for="UnitPrice" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="BarcodeValue"></label>
-        <input asp-for="BarcodeValue" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="ExpiryDuration"></label>
-        <input asp-for="ExpiryDuration" type="date" class="form-control" />
-    </div>
+            <!-- Product Info -->
+            <div class="mb-4 card p-2">
+                <h5 class="text-muted card-header">Product Information</h5>
+                <hr />
+                <div class="row g-3 card-body">
+                    <div class="col-md-6">
+                        <label asp-for="ProductName" class="form-label">Product Name</label>
+                        <input asp-for="ProductName" class="form-control" />
+                        <span asp-validation-for="ProductName" class="text-danger"></span>
+                    </div>
 
-    <button type="submit" class="btn btn-success">Update</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+                    <div class="col-md-3">
+                        <label asp-for="UnitPrice" class="form-label">Unit Price</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="changePrice(-1)">−</button>
+                            <input asp-for="UnitPrice" class="form-control text-center" />
+                            <button type="button" class="btn btn-outline-secondary" onclick="changePrice(1)">+</button>
+                        </div>
+                        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="UnitsInStock" class="form-label">Units In Stock</label>
+                        <input asp-for="UnitsInStock" class="form-control" />
+                        <span asp-validation-for="UnitsInStock" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="BarcodeValue" class="form-label">Barcode</label>
+                        <input asp-for="BarcodeValue" class="form-control" pattern="\d*" title="Digits only" />
+                        <span asp-validation-for="BarcodeValue" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ExpiryDuration" class="form-label">Expiry Date</label>
+                        <div class="input-group shadow-sm rounded">
+                            <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
+                            <input asp-for="ExpiryDuration" type="date" class="form-control" />
+                        </div>
+                        <span asp-validation-for="ExpiryDuration" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category & Supplier -->
+            <div class="mb-4 card p-2">
+                <h5 class="text-muted card-header">Associations</h5>
+                <hr />
+                <div class="row g-3 card-body">
+                    <div class="col-md-6">
+                        <label asp-for="CategoryId" class="form-label">Category</label>
+                        <select id="CategoryId" asp-for="CategoryId" class="form-select select-category">
+                            <option value="">-- Select Category --</option>
+                            @if (Model.CategoryId > 0 && Model.Category != null)
+                            {
+                                <option selected value="@Model.CategoryId">@Model.Category.CategoryName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SupplierId" class="form-label">Supplier</label>
+                        <select id="SupplierId" asp-for="SupplierId" class="form-select select-supplier">
+                            <option value="">-- Select Supplier --</option>
+                            @if (Model.SupplierId > 0 && Model.Supplier != null)
+                            {
+                                <option selected value="@Model.SupplierId">@Model.Supplier.SupplierName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="SupplierId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Update Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+                $(document).ready(function () {
+            const categories = @Html.Raw(ViewBag.CategoryJson ?? "[]");
+            const suppliers = @Html.Raw(ViewBag.SupplierJson ?? "[]");
+
+            const categoryId = parseInt('@Model.CategoryId');
+            const supplierId = parseInt('@Model.SupplierId');
+
+
+            const $category = $('.select-category');
+            const $supplier = $('.select-supplier');
+
+
+            console.log("Categories:", categories.forEach(c => console.log(c))); // nên in ra array
+            console.log("Suppliers:", suppliers.forEach(s => console.log(s)));
+
+            $category.select2({
+                data: categories,
+                width: '100%',
+                placeholder: 'Select category',
+                allowClear: true
+            });
+
+            if (categoryId) {
+                if (!$category.find('option[value="' + categoryId + '"]').length) {
+                    const selectedCat = categories.find(x => x.id == categoryId);
+                    if (selectedCat) {
+                        const newOption = new Option(selectedCat.text, selectedCat.id, true, true);
+                        $category.append(newOption).trigger('change');
+                    }
+                } else {
+                    $category.val(categoryId).trigger('change');
+                }
+            }
+
+            $supplier.select2({
+                data: suppliers,
+                width: '100%',
+                placeholder: 'Select supplier',
+                allowClear: true
+            });
+
+            if (supplierId) {
+                if (!$supplier.find('option[value="' + supplierId + '"]').length) {
+                    const selectedSup = suppliers.find(x => x.id == supplierId);
+                    if (selectedSup) {
+                        const newOption = new Option(selectedSup.text, selectedSup.id, true, true);
+                        $supplier.append(newOption).trigger('change');
+                    }
+                } else {
+                    $supplier.val(supplierId).trigger('change');
+                }
+            }
+        });
+
+                function changePrice(step) {
+            const input = document.querySelector('input[name="UnitPrice"]');
+            if (!input) return;
+
+            let value = parseFloat(input.value);
+            if (isNaN(value)) value = 0;
+
+            value += step;
+            if (value < 0) value = 0;
+
+            input.value = value.toFixed(2);
+        }
+
+    </script>
+}

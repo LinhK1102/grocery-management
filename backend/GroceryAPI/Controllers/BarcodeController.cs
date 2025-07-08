@@ -19,7 +19,7 @@ namespace GroceryAPI.Controllers
         [HttpGet("search/{barcode}")]
         public async Task<ActionResult<UpcProductResponse>> SearchProduct(string barcode)
         {
-            var result = await _barcodeRepo.GetProductInfoFromApiAsync(barcode);
+            var result = await _barcodeRepo.GetProductInfoFromApiAsync(barcode.Trim());
             if (result == null || !result.Status)
                 return NotFound("Không tìm thấy sản phẩm.");
 
@@ -28,7 +28,7 @@ namespace GroceryAPI.Controllers
         [HttpGet("scan/{barcode}")]
         public async Task<IActionResult> ScanBarcode(string barcode)
         {
-            var product = await _barcodeRepo.GetOrCreateProductByBarcodeAsync(barcode);
+            var product = await _barcodeRepo.GetOrCreateProductByBarcodeAsync(barcode.Trim());
             if (product == null)
                 return NotFound("Barcode not found and API has no result.");
 

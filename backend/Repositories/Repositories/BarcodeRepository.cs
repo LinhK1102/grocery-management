@@ -133,7 +133,7 @@ namespace Repositories.Repositories
 
             // Step 3: Map the response data to a Product entity
             var newProduct = UpcProductMapper.ToProductEntity(upcResponse);
-            var insertedProduct = _productRepository.AddProduct(newProduct);
+            var insertedProduct = await _productRepository.AddProduct(newProduct);
 
             return new ApiResponse<Product>
             {
