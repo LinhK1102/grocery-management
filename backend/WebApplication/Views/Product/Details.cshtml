@@ -1,4 +1,5 @@
 ﻿@model WebApplication.Models.Dto.ProductDto
+
 @{
     if (Model == null)
     {
@@ -9,34 +10,82 @@
     ViewData["Title"] = "Product Details";
 }
 
-<div class="card shadow-lg border-0 mt-4">
-    <div class="card-header bg-primary text-white">
-        <h4>@Model.ProductName</h4>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="bi bi-box-seam"></i> Product Details</h2>
+        <p class="text-muted">Detailed view of selected product information</p>
     </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Product ID</dt>
-            <dd class="col-sm-9">@Model.ProductId</dd>
 
-            <dt class="col-sm-3">Category ID</dt>
-            <dd class="col-sm-9">@Model.CategoryId</dd>
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-md-6">
+            <!-- Product Summary Card -->
+            <div class="card shadow border-0">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="bi bi-clipboard-data-fill text-primary fs-4 me-2"></i>
+                    <h5 class="mb-0">General Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Product Name:</strong> @Model.ProductName</p>
+                    <p><strong>Product ID:</strong> #@Model.ProductId</p>
+                    <p><strong>Barcode:</strong> @Model.BarcodeValue</p>
+                    <p><strong>Expiry Date:</strong> @Model.ExpiryDuration.ToString("yyyy-MM-dd")</p>
+                </div>
+            </div>
 
-            <dt class="col-sm-3">Supplier ID</dt>
-            <dd class="col-sm-9">@Model.SupplierId</dd>
+            <!-- Stock Info Card -->
+            <div class="card shadow border-0 mt-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="bi bi-box2-fill text-success fs-4 me-2"></i>
+                    <h5 class="mb-0">Stock & Price</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Units in Stock:</strong> @Model.UnitsInStock</p>
+                    <p><strong>Unit Price:</strong> @Model.UnitPrice.ToString("C")</p>
+                </div>
+            </div>
+        </div>
 
-            <dt class="col-sm-3">Units in Stock</dt>
-            <dd class="col-sm-9">@Model.UnitsInStock</dd>
+        <!-- Right Column -->
+        <div class="col-md-6">
+            <!-- Category Card -->
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="bi bi-tags-fill text-info fs-4 me-2"></i>
+                    <h5 class="mb-0">Category</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Category ID:</strong> @Model.CategoryId</p>
+                    <p><strong>Category Name:</strong> @Model.Category.CategoryName</p>
+                </div>
+            </div>
 
-            <dt class="col-sm-3">Unit Price</dt>
-            <dd class="col-sm-9">@Model.UnitPrice</dd>
+            <!-- Supplier Card -->
+            <div class="card shadow border-0">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="bi bi-truck text-secondary fs-4 me-2"></i>
+                    <h5 class="mb-0">Supplier</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Supplier ID:</strong> @Model.SupplierId</p>
+                    <p><strong>Supplier Name:</strong> @Model.Supplier.SupplierName</p>
+                    <p><strong>Email:</strong> @Model.Supplier.SupplierEmail</p>
+                    <p><strong>Phone Number:</strong> @Model.Supplier.SupplierPhoneNumber </p>
+                </div>
+            </div>
 
-            <dt class="col-sm-3">Barcode</dt>
-            <dd class="col-sm-9">@Model.BarcodeValue</dd>
 
-            <dt class="col-sm-3">Expiry</dt>
-            <dd class="col-sm-9">@Model.ExpiryDuration.ToString("yyyy-MM-dd")</dd>
-        </dl>
-        <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-warning">Edit</a>
-        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <!-- Actions -->
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn btn-outline-dark w-45">
+                    <i class="bi bi-arrow-left-circle"></i> Back to List
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-primary w-45">
+                    <i class="bi bi-pencil-square"></i> Edit Product
+                </a>
+            </div>
+        </div>
     </div>
 </div>
