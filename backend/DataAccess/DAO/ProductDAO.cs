@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.DTOs;
 using BusinessObjects.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -94,17 +95,18 @@ namespace DataAccess.DAO
         public List<Product> GetLowStockProducts(int threshold)
             => _context.Products.Where(p => p.UnitsInStock < threshold).ToList();
 
-        public void AdjustStock(string barcode, string action, int quantity)
+        public bool AdjustStock(string barcode, int action, int quantity)
         {
             var product = _context.Products.FirstOrDefault(p => p.BarcodeValue == barcode);
-            if (product == null) return;
+            if (product == null) return false;
 
-            if (action == "sell")
-                product.UnitsInStock -= quantity;
-            else if (action == "receive")
-                product.UnitsInStock += quantity;
+            if (action == 0) 
+                product.UnitsInStock -= quantity; //sell action
+            else if (action == 1)
+                product.UnitsInStock += quantity; //restock action
 
             _context.SaveChanges();
+            return true;
         }
         public List<Product> GetSupplierProductList(int supplierId)
         {

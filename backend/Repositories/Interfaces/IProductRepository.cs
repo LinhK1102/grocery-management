@@ -15,7 +15,7 @@ namespace Repositories.Interfaces
         Product GetProductByBarcode(string barcode);
         //Product GetProductInfByBarcode(string barcode);
         List<Product> GetLowStockProducts(int threshold);
-        void AdjustStock(string barcode, string action, int quantity);
+        bool AdjustStock(string barcode, int action, int quantity);
 
         List<Product> GetSupplierProductList(int supplierId);
     }

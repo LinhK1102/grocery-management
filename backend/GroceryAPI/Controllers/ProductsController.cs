@@ -92,12 +92,12 @@ namespace GroceryAPI.Controllers
             if (product == null)
                 return NotFound(SystemStatus.Fail("Product not found."));
 
-            if (request.Action != "sell" && request.Action != "receive")
-                return BadRequest(SystemStatus.Fail("Invalid action. Use 'sell' or 'receive'."));
+            if (request.Action != UtitlityConstant.Item_Action_Sell && request.Action != UtitlityConstant.Item_Action_Restock)
+                return BadRequest(SystemStatus.Fail($"Invalid action. Use {UtitlityConstant.Item_Action_Sell} or {UtitlityConstant.Item_Action_Restock}."));
 
-            _repo.AdjustStock(request.Barcode, request.Action, request.Quantity);
+            var status = _repo.AdjustStock(request.Barcode, request.Action, request.Quantity);
             // Notify clients about the stock adjustment
-            _notificationHub.Clients.All.SendAsync("StockAdjusted", new
+            _notificationHub.Clients.All.SendAsync($"StockAdjusted {status}", new
             {
                 Barcode = request.Barcode,
                 Action = request.Action,
@@ -116,7 +116,7 @@ namespace GroceryAPI.Controllers
         public class BarcodeActionRequest
         {
             public string Barcode { get; set; }
-            public string Action { get; set; }  // "sell" or "receive"
+            public int Action { get; set; }  // "sell" or "receive"
             public int Quantity { get; set; }
         }
     }
