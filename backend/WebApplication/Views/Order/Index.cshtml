@@ -1,0 +1,36 @@
+﻿@model List<WebApplication.Models.Dto.OrderDto>
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<h2 class="text-2xl font-bold mb-4">Order List</h2>
+
+<table class="min-w-full bg-white border border-gray-200 shadow-md rounded">
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="px-4 py-2">Order ID</th>
+            <th class="px-4 py-2">Order Date</th>
+            <th class="px-4 py-2">Customer ID</th>
+            <th class="px-4 py-2">Employee ID</th>
+            <th class="px-4 py-2">Outlet ID</th>
+            <th class="px-4 py-2">Warehouse ID</th>
+            <th class="px-4 py-2">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-2">@order.OrderId</td>
+                <td class="px-4 py-2">@order.OrderDate.ToString("yyyy-MM-dd")</td>
+                <td class="px-4 py-2">@order.CustomerId</td>
+                <td class="px-4 py-2">@order.EmployeeId</td>
+                <td class="px-4 py-2">@order.OutletId</td>
+                <td class="px-4 py-2">@order.WarehouseId</td>
+                <td class="px-4 py-2">
+                    <a class="text-blue-600 hover:underline" href="@Url.Action("Details", new { id = order.OrderId })">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,35 @@
+﻿@model List<WebApplication.Models.Dto.EmployeeDto>
+@{
+    ViewData["Title"] = "Employee List";
+}
+
+<h1 class="text-2xl font-bold mb-4">Employees</h1>
+
+<a class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block" href="@Url.Action("Create")">+ Add Employee</a>
+
+<table class="min-w-full bg-white shadow-md rounded border">
+    <thead>
+        <tr>
+            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">Name</th>
+            <th class="px-4 py-2">Email</th>
+            <th class="px-4 py-2">Retail Outlet</th>
+            <th class="px-4 py-2">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr class="border-t">
+                <td class="px-4 py-2">@emp.EmployeeId</td>
+                <td class="px-4 py-2">@emp.EmployeeName</td>
+                <td class="px-4 py-2">@emp.EmployeeEmail</td>
+                <td class="px-4 py-2">@emp.RetailOutletId</td>
+                <td class="px-4 py-2">
+                    <a class="text-blue-600 hover:underline" href="@Url.Action("Edit", new { id = emp.EmployeeId })">Edit</a> |
+                    <a class="text-red-600 hover:underline" href="@Url.Action("Delete", new { id = emp.EmployeeId })">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

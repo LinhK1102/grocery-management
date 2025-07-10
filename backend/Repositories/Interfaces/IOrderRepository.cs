@@ -11,9 +11,9 @@ namespace Repositories.Interfaces
     {
         List<Order> GetAllOrders();
         Order GetOrderById(int id);
-        void CreateOrder(Order order);
-        void UpdateOrder(Order order);
-        void DeleteOrder(int id);
+        Order CreateOrder(Order order);
+        Order UpdateOrder(Order order);
+        bool DeleteOrder(int id);
         List<Order> SearchOrders(string term);
     }
 }

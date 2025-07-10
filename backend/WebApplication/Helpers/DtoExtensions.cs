@@ -37,5 +37,39 @@ namespace WebApplication.Helpers
                 ProductWarehouses = new List<ProductWarehouseDto>()
             };
         }
+
+        public static readonly Dictionary<string, string> Icons = new()
+        {
+            ["BEVERAGES"] = "fa-mug-hot",
+            ["SNACKS"] = "fa-cookie-bite",
+            ["DAIRY PRODUCTS"] = "fa-cheese",
+            ["FRESH PRODUCE"] = "fa-apple-whole",
+            ["BAKERY"] = "fa-bread-slice",
+            ["MEAT & POULTRY"] = "fa-drumstick-bite",
+            ["FROZEN FOODS"] = "fa-snowflake",
+            ["CANNED GOODS"] = "fa-can-food",
+            ["GRAINS & CEREALS"] = "fa-seedling",
+            ["SPICES & SEASONINGS"] = "fa-pepper-hot",
+            ["CONDIMENTS & SAUCES"] = "fa-bottle-droplet",
+            ["CLEANING SUPPLIES"] = "fa-pump-soap",
+            ["PERSONAL CARE"] = "fa-soap",
+            ["HOUSEHOLD ITEMS"] = "fa-broom",
+            ["BABY PRODUCTS"] = "fa-baby",
+            ["PET SUPPLIES"] = "fa-dog",
+            ["HEALTH & WELLNESS"] = "fa-heart-pulse",
+            ["INSTANT NOODLES"] = "fa-bowl-rice",
+            ["ALCOHOLIC BEVERAGES"] = "fa-wine-glass-alt",
+            ["UNCATEGORIZED"] = "fa-box"
+        };
+
+        public static string GetIconClass(string categoryName)
+        {
+            if (string.IsNullOrWhiteSpace(categoryName)) return "fa-box";
+
+            return Icons.TryGetValue(categoryName.ToUpper(), out var icon)
+                ? icon
+                : "fa-box";
+        }
     }
+
 }

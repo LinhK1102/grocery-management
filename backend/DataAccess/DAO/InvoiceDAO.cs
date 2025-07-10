@@ -25,6 +25,21 @@ namespace DataAccess.DAO
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
         }
 
+        public async Task<Invoice> GetInvoiceAsync(int id)
+        {
+            return await _context.Invoice
+                .Include(i => i.InvoiceItems)
+                    .ThenInclude(ii => ii.Product)
+                .FirstOrDefaultAsync(i => i.InvoiceId == id);
+        }
+
+        public async Task<List<Invoice>> GetAllInvoicesAsync()
+        {
+            return await _context.Invoice
+                .Include(i => i.InvoiceItems)
+                    .ThenInclude(ii => ii.Product)
+                .ToListAsync();
+        }
         public async Task<ApiResponse<Invoice>> CreateInvoice(Invoice invoice)
         {
             invoice.CreatedDate = DateTime.Now;
@@ -79,7 +94,7 @@ namespace DataAccess.DAO
         }
 
         // Tạo nội dung hóa đơn dạng text
-        public static string GenerateInvoiceText(InvoiceData invoice)
+        private static string GenerateInvoiceText(InvoiceData invoice)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"INVOICE ID: {invoice.InvoiceId}");
@@ -99,7 +114,7 @@ namespace DataAccess.DAO
         }
 
         // Export PDF từ nội dung text và trả về đường dẫn
-        public static string ExportInvoiceToPdf(string content, string fileNameWithoutExt = null)
+        public  string ExportInvoiceToPdf(string content, string fileNameWithoutExt = null)
         {
             var doc = new PdfDocument();
             var page = doc.AddPage();
@@ -123,5 +138,28 @@ namespace DataAccess.DAO
             doc.Save(filePath);
             return filePath;
         }
+
+        public async Task<List<InvoiceItem>> GetItemsByInvoiceIdAsync(int invoiceId)
+        {
+            return await _context.InvoiceItem
+                .Where(ii => ii.InvoiceId == invoiceId)
+                .Include(ii => ii.Product)
+                .ToListAsync();
+        }
+
+        public async Task<ApiResponse<InvoiceItem>> CreateInvoiceItemAsync(InvoiceItem item)
+        {
+            item.Invoice.CreatedDate = DateTime.Now;
+            _context.Add(item);
+            await _context.SaveChangesAsync();
+            return new ApiResponse<InvoiceItem>
+            {
+                Success = true,
+                Message = "Invoice item created successfully.",
+                Data = item
+            };
+        }
+
+
     }
 }

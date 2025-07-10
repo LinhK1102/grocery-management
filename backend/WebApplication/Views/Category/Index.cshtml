@@ -8,19 +8,24 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         @foreach (var item in Model)
         {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <!-- Placeholder ảnh -->
-                    <div class="card-img-top bg-light" style="height: 150px; display: flex; align-items: center; justify-content: center;">
-                        <span class="text-muted">[Image Here]</span>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm border-0 rounded-3 p-2 d-flex flex-row align-items-center" style="min-height: 100px;">
+                    <!-- Hình ảnh bên trái -->
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-light rounded" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            @{
+                                var icon = DtoExtensions.GetIconClass(item.CategoryName);
+                            }
+                            <i class="fa-solid @icon text-primary fa-lg"></i>
+                        </div>
                     </div>
 
-                    <div class="card-body">
-                        <h5 class="card-title text-center text-uppercase">@item.CategoryName</h5>
-                    </div>
-
-                    <div class="card-footer text-center bg-white border-0 pb-3">
-                        <a asp-action="Details" asp-route-id="@item.CategoryId" class="btn btn-outline-primary btn-sm">View More</a>
+                    <!-- Nội dung bên phải -->
+                    <div class="flex-grow-1">
+                        <h6 class="fw-semibold mb-1 text-uppercase text-primary">@item.CategoryName</h6>
+                        <a asp-action="Details" asp-route-id="@item.CategoryId" class="btn btn-sm btn-outline-primary mt-1">
+                            View More
+                        </a>
                     </div>
                 </div>
             </div>

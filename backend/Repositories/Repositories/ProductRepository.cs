@@ -10,22 +10,24 @@ namespace Repositories.Repositories
 {
     public class ProductRepository : IProductRepository
     {
-        private readonly ProductDAO _dao;
+        private readonly ProductDAO _productDao;
         private readonly CategoryDAO _categoryDao;
         private readonly SupplierDAO _supplierDao;
         private readonly IItemRepository _itemRepository;
         private readonly IWarehouseRepository _warehouseRepository;
-        public ProductRepository(ApplicationDbContext context, CategoryDAO categoryDao, SupplierDAO supplierDao, IItemRepository itemRepository, IWarehouseRepository warehouseRepository)
+        private readonly ApplicationDbContext _context;
+        public ProductRepository(ApplicationDbContext context, ProductDAO productDAO, CategoryDAO categoryDao, SupplierDAO supplierDao, IItemRepository itemRepository, IWarehouseRepository warehouseRepository)
         {
-            _dao = new ProductDAO(context);
+            _context = context;
+            _productDao = productDAO;
             _categoryDao = categoryDao;
             _supplierDao = supplierDao;
             _itemRepository = itemRepository;
             _warehouseRepository = warehouseRepository;
         }
 
-        public List<Product> GetAllProduct() => _dao.GetAllProduct();
-        public Product GetProductById(int id) => _dao.GetProductById(id);
+        public List<Product> GetAllProduct() => _productDao.GetAllProduct();
+        public Product GetProductById(int id) => _productDao.GetProductById(id);
         public async Task<Product> AddProduct(Product product)
         {
             if (product == null)
@@ -47,7 +49,7 @@ namespace Repositories.Repositories
             product.Items = null;
 
             // Save product to DB to generate ProductId
-            var savedProduct =  _dao.AddProduct(product);
+            var savedProduct =  _productDao.AddProduct(product);
 
             // Save items if any
             if (detachedItems.Any())
@@ -91,16 +93,17 @@ namespace Repositories.Repositories
         }
 
 
-        public Product UpdateProduct(ProductUpdateDto product) => _dao.UpdateProduct(product);
-        public bool DeleteProduct(int id) => _dao.DeleteProduct(id);
+        public Product UpdateProduct(ProductUpdateDto product) => _productDao.UpdateProduct(product);
+        public bool DeleteProduct(int id) => _productDao.DeleteProduct(id);
 
-        public Product GetProductByBarcode(string barcode) => _dao.GetProductByBarcode(barcode);
+        public Product GetProductByBarcode(string barcode) => _productDao.GetProductByBarcode(barcode);
 
-        public List<Product> GetLowStockProducts(int threshold) => _dao.GetLowStockProducts(threshold);
+        public List<Product> GetLowStockProducts(int threshold) => _productDao.GetLowStockProducts(threshold);
 
-        public bool AdjustStock(string barcode, int action, int quantity) => _dao.AdjustStock(barcode, action, quantity);
+        public bool AdjustStock(string barcode, int action, int quantity) => _productDao.AdjustStock(barcode, action, quantity);
 
-        public List<Product> GetSupplierProductList(int supplierId) => _dao.GetSupplierProductList(supplierId);
+        public List<Product> GetSupplierProductList(int supplierId) => _productDao.GetSupplierProductList(supplierId);
+        public List<Product> GetCategoryProductList(int supplierId) => _productDao.GetCategoryProductList(supplierId);
 
     }
 }

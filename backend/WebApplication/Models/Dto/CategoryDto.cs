@@ -9,6 +9,7 @@ namespace WebApplication.Models.Dto
 
         [JsonPropertyName("categoryName")]
         public string CategoryName { get; set; }
+        public string CategoryImgUrl { get; set; }
     }
 
 }

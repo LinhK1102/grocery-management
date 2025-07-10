@@ -72,6 +72,8 @@ builder.Services.AddScoped<IBarcodeRepository, BarcodeRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IGoogleSheetsService, GoogleSheetsService>();
 
+builder.Services.AddScoped<InvoiceDAO>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
 
 // --- Repositories: Event handling ---

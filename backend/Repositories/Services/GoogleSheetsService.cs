@@ -1,14 +1,11 @@
 ﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
 using Utility.Common;
 
 namespace Repositories.Services
@@ -16,283 +13,221 @@ namespace Repositories.Services
     public class GoogleSheetsService : IGoogleSheetsService
     {
         private readonly string _credentialsPath;
+        private readonly SheetsService _sheetsService;
 
         public GoogleSheetsService(IConfiguration config)
         {
-            _credentialsPath = config["GoogleSheet:CredentialsPath"];
-        }
+            _credentialsPath = config["GoogleSheet:CredentialsPath"]!;
 
-        private async Task<string> GetAccessTokenAsync()
-        {
-            GoogleCredential credential = await GoogleCredential
-                .FromFileAsync(_credentialsPath, CancellationToken.None);
+            var credential = GoogleCredential
+                .FromFile(_credentialsPath)
+                .CreateScoped(UtitlityConstant.Google_Sheet_Scopes);
 
-            // Scope cần thiết cho Sheets và Drive
-            credential = credential.CreateScoped(UtitlityConstant.Google_Sheet_Scopes);
-
-            // Lấy access token để gọi Google API
-            var token = await credential.UnderlyingCredential.GetAccessTokenForRequestAsync();
-
-            return token;
+            _sheetsService = new SheetsService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "Grocery Export Sheets"
+            });
         }
 
         public async Task<string> CreateSpreadsheetAsync(string title)
         {
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-
-            var url = "https://www.googleapis.com/drive/v3/files";
-
-            var requestBody = new
+            Console.WriteLine($"[CreateSpreadsheet] Creating spreadsheet: {title}");
+            var spreadsheet = new Spreadsheet
             {
-                name = title,
-                mimeType = UtitlityConstant.Google_Drive_mimeType,
-                parents = new[] { UtitlityConstant.Google_Drive_FolderId } // ID thư mục Drive
+                Properties = new SpreadsheetProperties { Title = title }
             };
-
-            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-            var response = await http.PostAsync(url, content);
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"[Google API] Failed to create spreadsheet: {response.StatusCode} - {responseContent}");
-                return null!;
-            }
-
-            dynamic json = JsonConvert.DeserializeObject(responseContent);
-            return json.id;
-        }
-
-
-
-        private async Task<HttpClient> CreateAuthorizedHttpClientAsync()
-        {
-            var token = await GetAccessTokenAsync();
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return client;
+            var createRequest = _sheetsService.Spreadsheets.Create(spreadsheet);
+            var response = await createRequest.ExecuteAsync();
+            Console.WriteLine($"[CreateSpreadsheet] Created with ID: {response.SpreadsheetId}");
+            return response.SpreadsheetId;
         }
 
         public async Task<IList<string>> GetHeaderColumnsAsync(string spreadsheetId, string sheetName)
         {
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-
-            var url = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{sheetName}!1:1";
-            var response = await http.GetAsync(url);
-            var content = await response.Content.ReadAsStringAsync();
-            dynamic json = JsonConvert.DeserializeObject(content);
-
-            var headers = new List<string>();
-            foreach (var h in json.values[0]) headers.Add((string)h);
+            Console.WriteLine($"[GetHeaderColumns] Spreadsheet: {spreadsheetId}, Sheet: {sheetName}");
+            var range = $"{sheetName}!1:1";
+            var request = _sheetsService.Spreadsheets.Values.Get(spreadsheetId, range);
+            var response = await request.ExecuteAsync();
+            var headers = response.Values?.FirstOrDefault()?.Select(v => v.ToString()).ToList() ?? new List<string>();
+            Console.WriteLine($"[GetHeaderColumns] Headers: {string.Join(", ", headers)}");
             return headers;
         }
 
         public async Task<bool> SheetExistsAsync(string spreadsheetId, string sheetName)
         {
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-
-            var url = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}";
-            var response = await http.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorText = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[Google API] Error checking spreadsheet: {response.StatusCode} - {errorText}");
-                return false; // hoặc throw nếu cần
-            }
-
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode || !content.Trim().StartsWith("{"))
-            {
-                Console.WriteLine($"[Google API] Error checking spreadsheet: {response.StatusCode} - {content}");
-                return false;
-            }
-
-            dynamic json = JsonConvert.DeserializeObject(content);
-
-            foreach (var sheet in json.sheets)
-            {
-                if ((string)sheet.properties.title == sheetName) return true;
-            }
-            return false;
-        }
-
-        private async Task<string?> GetApiJsonAsync(string url)
-        {
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-            var response = await http.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[GoogleSheets API] Failed: {response.StatusCode} - {error}");
-                return null;
-            }
-
-            return await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[SheetExists] Spreadsheet: {spreadsheetId}, Checking sheet: {sheetName}");
+            var sheet = await _sheetsService.Spreadsheets.Get(spreadsheetId).ExecuteAsync();
+            var exists = sheet.Sheets.Any(s => s.Properties.Title == sheetName);
+            Console.WriteLine($"[SheetExists] Exists: {exists}");
+            return exists;
         }
 
         public async Task<bool> CreateSheetIfNotExistsAsync(string spreadsheetId, string sheetName)
         {
             if (await SheetExistsAsync(spreadsheetId, sheetName)) return true;
 
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-
-            var url = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}:batchUpdate";
-            var requestBody = new
+            Console.WriteLine($"[CreateSheetIfNotExists] Creating sheet: {sheetName}");
+            var addSheetRequest = new Request
             {
-                requests = new[]
+                AddSheet = new AddSheetRequest
                 {
-                new
-                {
-                    addSheet = new
-                    {
-                        properties = new { title = sheetName }
-                    }
+                    Properties = new SheetProperties { Title = sheetName }
                 }
-            }
             };
 
-            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-            var response = await http.PostAsync(url, content);
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request> { addSheetRequest }
+            };
 
-            return response.IsSuccessStatusCode;
+            var request = _sheetsService.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadsheetId);
+            var response = await request.ExecuteAsync();
+            var created = response.Replies.Any();
+            Console.WriteLine($"[CreateSheetIfNotExists] Created: {created}");
+            return created;
         }
 
-        public async Task<bool> WriteDataWithColumnMatchingAsync(string spreadsheetId,
-        string sheetName, IList<IDictionary<string, object>> data)
+        public async Task<bool> WriteDataWithColumnMatchingAsync(string spreadsheetId, string sheetName, IList<IDictionary<string, object>> data)
         {
+            Console.WriteLine($"[WriteDataWithColumnMatching] Spreadsheet: {spreadsheetId}, Sheet: {sheetName}");
             var headers = await GetHeaderColumnsAsync(spreadsheetId, sheetName);
-
             var rows = new List<IList<object>>();
             foreach (var row in data)
             {
                 var line = new List<object>();
-                foreach (var header in headers)
+                foreach (var h in headers)
                 {
-                    line.Add(row.ContainsKey(header) ? row[header] : "");
+                    line.Add(row.ContainsKey(h) ? row[h] : "");
                 }
                 rows.Add(line);
             }
 
-            return await AppendDataAfterHeaderAsync(spreadsheetId, sheetName, rows);
+            return await AppendDataAfterHeaderAsync(spreadsheetId, sheetName, rows, headers.Cast<object>().ToList());
         }
-
-
-        Task<bool> IGoogleSheetsService.WriteDataWithColumnMatchingAsync(string spreadsheetId,
-                string sheetName, IList<IDictionary<string, object>> data)
-        {
-            var headersTask = GetHeaderColumnsAsync(spreadsheetId, sheetName);
-            headersTask.Wait(); // dùng sync vì interface không cho async
-            var headers = headersTask.Result;
-
-            var rows = new List<IList<object>>();
-            foreach (var row in data)
-            {
-                var line = new List<object>();
-                foreach (var header in headers)
-                {
-                    line.Add(row.ContainsKey(header) ? row[header] : "");
-                }
-                rows.Add(line);
-            }
-
-            return AppendDataAfterHeaderAsync(spreadsheetId, sheetName, rows);
-        }
-
 
         public async Task<bool> WriteDataWithFixedOrderAsync(string spreadsheetId, string sheetName, IList<IList<object>> rows)
         {
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-
+            Console.WriteLine($"[WriteDataWithFixedOrder] Spreadsheet: {spreadsheetId}, Sheet: {sheetName}");
             var range = $"{sheetName}!A2";
-            var url = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{range}?valueInputOption=RAW";
-
-            var requestBody = new
+            var valueRange = new ValueRange
             {
-                range,
-                majorDimension = UtitlityConstant.Google_Sheet_Rows,
-                values = rows
+                Range = range,
+                MajorDimension = "ROWS",
+                Values = rows
             };
 
-            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-            var response = await http.PutAsync(url, content);
-
-            return response.IsSuccessStatusCode;
+            var request = _sheetsService.Spreadsheets.Values.Update(valueRange, spreadsheetId, range);
+            request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+            var response = await request.ExecuteAsync();
+            Console.WriteLine($"[WriteDataWithFixedOrder] Rows updated: {response.UpdatedRows}");
+            return response.UpdatedRows > 0;
         }
 
-        public async Task<bool> AppendDataAfterHeaderAsync(string spreadsheetId, string sheetName, IList<IList<object>> rows)
+        public async Task<bool> AppendDataAfterHeaderAsync(string spreadsheetId, string sheetName, IList<IList<object>> rows, IList<object>? headers = null)
         {
-            using var http = await CreateAuthorizedHttpClientAsync();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
+            Console.WriteLine($"[AppendDataAfterHeader] Spreadsheet: {spreadsheetId}, Sheet: {sheetName}");
 
-            var url = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{sheetName}!A1:append?valueInputOption=RAW";
-            var requestBody = new
+            if (headers != null && headers.Count > 0)
             {
-                values = rows,
-                majorDimension = UtitlityConstant.Google_Sheet_Rows
+                Console.WriteLine("[AppendDataAfterHeader] Updating headers");
+                var formattedHeaders = headers.Select(FormatValue).ToList();
+
+                var headerRange = $"{sheetName}!A1";
+                var headerValue = new ValueRange
+                {
+                    Values = new List<IList<object>> { formattedHeaders },
+                    MajorDimension = "ROWS"
+                };
+
+                var updateRequest = _sheetsService.Spreadsheets.Values.Update(headerValue, spreadsheetId, headerRange);
+                updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+                await updateRequest.ExecuteAsync();
+            }
+
+            // Áp dụng FormatValue cho mọi phần tử trong rows
+            var formattedRows = rows
+                .Select(row => row.Select(FormatValue).ToList<object>())
+                .ToList<IList<object>>();
+
+            var range = $"{sheetName}";
+            var valueRange = new ValueRange
+            {
+                Values = formattedRows,
+                MajorDimension = "ROWS"
             };
 
-            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-            var response = await http.PostAsync(url, content);
+            var appendRequest = _sheetsService.Spreadsheets.Values.Append(valueRange, spreadsheetId, range);
+            appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+            appendRequest.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
 
-            return response.IsSuccessStatusCode;
+            var response = await appendRequest.ExecuteAsync();
+            Console.WriteLine($"[AppendDataAfterHeader] Rows appended: {response.Updates.UpdatedRows}");
+
+            return response.Updates.UpdatedRows > 0;
+        }
+
+        private object FormatValue(object? value)
+        {
+            if (value == null) return "";
+            if (value is string || value.GetType().IsPrimitive) return value;
+            if (value is DateTime dt) return dt.ToString("yyyy-MM-dd HH:mm:ss");
+            return JsonConvert.SerializeObject(value); // fallback cho object phức tạp
         }
 
         public async Task<bool> UpsertDataAsync(string spreadsheetId, string sheetName, string keyColumn, IList<Dictionary<string, object>> newData)
         {
+            Console.WriteLine($"[UpsertData] Spreadsheet: {spreadsheetId}, Sheet: {sheetName}, Key: {keyColumn}");
             var headers = await GetHeaderColumnsAsync(spreadsheetId, sheetName);
+            var readRequest = _sheetsService.Spreadsheets.Values.Get(spreadsheetId, sheetName);
+            var readResponse = await readRequest.ExecuteAsync();
+
             var existing = new Dictionary<string, int>();
-
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
-            var readUrl = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{sheetName}";
-            var readResp = await http.GetAsync(readUrl);
-            var readJson = JsonConvert.DeserializeObject<dynamic>(await readResp.Content.ReadAsStringAsync());
-
             int keyIndex = headers.IndexOf(keyColumn);
-            if (keyIndex < 0) return false;
+            if (keyIndex < 0)
+            {
+                Console.WriteLine("[UpsertData] Key column not found");
+                return false;
+            }
 
             int rowIndex = 1;
-            foreach (var row in readJson.values)
+            foreach (var row in readResponse.Values ?? new List<IList<object>>())
             {
                 if (row.Count > keyIndex)
-                    existing[(string)row[keyIndex]] = rowIndex;
+                    existing[row[keyIndex].ToString()] = rowIndex;
                 rowIndex++;
             }
 
             foreach (var data in newData)
             {
                 string key = data[keyColumn]?.ToString();
-                var row = headers.Select(h => data.ContainsKey(h) ? data[h] : "").ToList();
+                var row = headers.Select(h => data.ContainsKey(h) ? data[h] : "").ToList<object>();
 
-                string range = existing.ContainsKey(key)
-                    ? $"{sheetName}!A{existing[key] + 1}"
-                    : $"{sheetName}!A1:append";
-
-                var reqBody = new
+                var valueRange = new ValueRange
                 {
-                    range,
-                    majorDimension = UtitlityConstant.Google_Sheet_Rows,
-                    values = new[] { row }
+                    Values = new List<IList<object>> { row },
+                    MajorDimension = "ROWS"
                 };
 
-                var content = new StringContent(JsonConvert.SerializeObject(reqBody), Encoding.UTF8, "application/json");
                 if (existing.ContainsKey(key))
-                    await http.PutAsync($"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{range}?valueInputOption=RAW", content);
+                {
+                    Console.WriteLine($"[UpsertData] Updating row for key: {key}");
+                    var updateRange = $"{sheetName}!A{existing[key] + 1}";
+                    var updateRequest = _sheetsService.Spreadsheets.Values.Update(valueRange, spreadsheetId, updateRange);
+                    updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+                    await updateRequest.ExecuteAsync();
+                }
                 else
-                    await http.PostAsync($"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{range}?valueInputOption=RAW&insertDataOption=INSERT_ROWS", content);
+                {
+                    Console.WriteLine($"[UpsertData] Appending row for key: {key}");
+                    var appendRequest = _sheetsService.Spreadsheets.Values.Append(valueRange, spreadsheetId, sheetName);
+                    appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+                    appendRequest.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
+                    await appendRequest.ExecuteAsync();
+                }
             }
 
             return true;
         }
     }
-
 }

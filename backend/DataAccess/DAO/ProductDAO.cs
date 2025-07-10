@@ -114,5 +114,12 @@ namespace DataAccess.DAO
                 .Where(p => p.SupplierId == supplierId)
                 .ToList();
         }
+
+        public List<Product> GetCategoryProductList(int categoryId)
+        {
+            return _context.Products
+                .Where(p => p.CategoryId == categoryId)
+                .ToList();
+        }
     }
 }

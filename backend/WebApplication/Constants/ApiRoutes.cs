@@ -13,6 +13,7 @@
             public const string Scan = "/api/products/scan/{0}";
             public const string ScanAdjustStock = "/api/products/scan-adjust-stock";
             public const string GetBySupplierId = "/api/products/supplier-products/{0}";
+            public const string GetByCategoryId = "/api/products/category-products/{0}";
         }
 
         public static class Employee

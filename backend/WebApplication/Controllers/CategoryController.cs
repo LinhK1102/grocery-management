@@ -2,15 +2,18 @@
 using WebApplication.Services;
 using WebApplication.Models.Dto;
 using WebApplication.Service;
+using WebApplication.Helpers;
 
 namespace WebApplication.Controllers;
 public class CategoryController : Controller
 {
     private readonly CategoryApiService _categoryApiService;
+    private readonly ProductApiService _productApiService;
 
-    public CategoryController(CategoryApiService categoryApiService)
+    public CategoryController(CategoryApiService categoryApiService, ProductApiService productApiService)
     {
         _categoryApiService = categoryApiService;
+        _productApiService = productApiService;
     }
 
     public async Task<IActionResult> Index()
@@ -23,6 +26,8 @@ public class CategoryController : Controller
     {
         var category = await _categoryApiService.GetByIdAsync(id);
         if (category == null) return View("NotFound");
+
+        ViewBag.ProductList = await _productApiService.GetByCategoryIdAsync(id);
         return View(category);
     }
 

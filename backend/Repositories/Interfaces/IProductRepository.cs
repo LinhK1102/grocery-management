@@ -18,5 +18,6 @@ namespace Repositories.Interfaces
         bool AdjustStock(string barcode, int action, int quantity);
 
         List<Product> GetSupplierProductList(int supplierId);
+        List<Product> GetCategoryProductList(int categoryId);
     }
 }

@@ -94,5 +94,15 @@ namespace WebApplication.Services
             var products = await JsonUtility.DeserializeWrappedListAsync<ProductDto>(res);
             return products;
         }
+
+        public async Task<List<ProductDto>> GetByCategoryIdAsync(int supplierId)
+        {
+            var client = CreateClient();
+            var url = string.Format(ApiRoutes.Product.GetBySupplierId, supplierId);
+            var res = await client.GetAsync(url);
+
+            var products = await JsonUtility.DeserializeWrappedListAsync<ProductDto>(res);
+            return products;
+        }
     }
 }

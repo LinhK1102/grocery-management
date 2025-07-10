@@ -51,6 +51,8 @@ builder.Services.AddScoped<RetailOutletApiService>();
 builder.Services.AddScoped<SupplierApiService>();
 builder.Services.AddScoped<WarehouseApiService>();
 builder.Services.AddScoped<CategoryApiService>();
+builder.Services.AddScoped<InvoiceApiService>();
+builder.Services.AddScoped<InvoiceItemApiService>();
 // ... các service khác
 
 

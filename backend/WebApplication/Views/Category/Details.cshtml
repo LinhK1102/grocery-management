@@ -2,16 +2,54 @@
 @model CategoryDto
 @{
     ViewData["Title"] = "Category Details";
+    var productList = ViewBag.ProductList as List<ProductDto>;
 }
-<div class="card mt-4">
-    <div class="card-header bg-primary text-white">
-        <h4>@Model.CategoryName</h4>
-    </div>
-    <div class="card-body">
-        <p><strong>ID:</strong> @Model.CategoryId</p>
-    </div>
-    <div class="card-footer">
-        <a asp-action="Edit" asp-route-id="@Model.CategoryId" class="btn btn-warning">Edit</a>
+<div class="bg-white shadow rounded-lg p-6 mt-4 card p-4">
+    <h4 class="text-xl font-semibold mb-2 card-header">@Model.CategoryName</h4>
+
+    <hr/>
+    
+    @* <h5 class="text-lg font-semibold mb-3">Products in this Category:</h5> *@
+
+    @if (productList != null && productList.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var p in productList)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-3 p-2 h-100 text-center small">
+                        <div class="text-muted text-uppercase" style="font-size: 0.75rem;">@p.BarcodeValue</div>
+
+                        <div class="fw-semibold text-dark mt-1 text-truncate" title="@p.ProductName" style="font-size: 0.9rem;">
+                            @p.ProductName
+                        </div>
+
+                        <div class="text-success fw-bold" style="font-size: 0.85rem;">
+                            @String.Format("{0:C0}", p.UnitPrice)
+                        </div>
+
+                        <a asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@p.ProductId"
+                           class="btn btn-sm btn-outline-primary mt-2 w-100">
+                            View
+                        </a>
+                    </div>
+                </div>
+
+
+
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">No products found in this category.</p>
+    }
+
+
+    <div class="mt-4">
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
     </div>
 </div>
+

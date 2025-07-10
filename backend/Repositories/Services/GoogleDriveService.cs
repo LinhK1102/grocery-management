@@ -1,25 +1,27 @@
-﻿using BusinessObjects.DTOs;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
+﻿using NetHttpClientFactory = System.Net.Http.IHttpClientFactory;
+using GoogleHttpClientFactory = Google.Apis.Http.IHttpClientFactory;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
-using Utility.Common;
-using Microsoft.Extensions.Http;
-using System.Net.Http;
-using Microsoft.AspNetCore.Authentication;
 using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
+using BusinessObjects.DTOs;
+using Google.Apis.Http;
+using Utility.Common;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace Repositories.Services
 {
     public class GoogleDriveService
     {
         private readonly GoogleAccessTokenService _tokenService;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly NetHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public GoogleDriveService(GoogleAccessTokenService tokenService, IHttpClientFactory factory)
+        public GoogleDriveService(GoogleAccessTokenService tokenService, NetHttpClientFactory factory, IHttpContextAccessor contextAccessor)
         {
             _tokenService = tokenService;
             _httpClientFactory = factory;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task<StorageQuotaDto> GetStorageQuotaAsync()
@@ -27,8 +29,7 @@ namespace Repositories.Services
             var accessToken = await _tokenService.GetAccessTokenAsync();
 
             var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", accessToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var response = await client.GetAsync("https://www.googleapis.com/drive/v3/about?fields=storageQuota");
             response.EnsureSuccessStatusCode();
@@ -59,6 +60,67 @@ namespace Repositories.Services
                 UsageInTrash_GB = ToGB(usageInTrash)
             };
         }
-    }
 
+        public async Task<string> CreateSheetInFolderAsync(string folderId, string sheetName)
+        {
+            var accessToken = await _tokenService.GetAccessTokenAsync();
+
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var metadata = new
+            {
+                name = sheetName,
+                mimeType = UtitlityConstant.Google_Drive_MimeType_Sheet,
+                parents = new[] { folderId }
+            };
+
+            var content = new StringContent(
+                Newtonsoft.Json.JsonConvert.SerializeObject(metadata),
+                System.Text.Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await client.PostAsync("https://www.googleapis.com/drive/v3/files", content);
+            response.EnsureSuccessStatusCode();
+
+            var json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            return json["id"]?.ToString() ?? throw new Exception("Failed to retrieve Sheet ID.");
+        }
+
+        public async Task<bool> UpdateLastRowAsync(string spreadsheetId, string sheetName, IList<object> rowData)
+        {
+            var accessToken = await _tokenService.GetAccessTokenAsync();
+
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            // Đọc tất cả các dòng để lấy số dòng hiện tại
+            var readUrl = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{sheetName}!{UtitlityConstant.Google_Sheet_DefaultRange}";
+            var readResponse = await client.GetAsync(readUrl);
+            readResponse.EnsureSuccessStatusCode();
+
+            var readJson = JObject.Parse(await readResponse.Content.ReadAsStringAsync());
+            int currentRow = readJson["values"]?.Count() ?? 0;
+
+            var updateRange = $"{sheetName}!A{currentRow}";
+            var body = new
+            {
+                range = updateRange,
+                majorDimension = UtitlityConstant.Google_Sheet_MajorDimension,
+                values = new[] { rowData }
+            };
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(body),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var updateUrl = $"{UtitlityConstant.Google_Sheet_SheetsBaseUrl}/{spreadsheetId}/values/{updateRange}?valueInputOption={UtitlityConstant.Google_Sheet_ValueInputOption}";
+            var updateResponse = await client.PutAsync(updateUrl, content);
+            return updateResponse.IsSuccessStatusCode;
+        }
+
+    }
 }

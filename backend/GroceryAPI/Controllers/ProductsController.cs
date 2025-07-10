@@ -113,6 +113,12 @@ namespace GroceryAPI.Controllers
             return Ok(SystemStatus.Success(list, $"Products from supplier ID {supplierId} retrieved."));
         }
 
+        [HttpGet("category-products/{categoryId}")]
+        public IActionResult GetCategoryProductList(int categoryId)
+        {
+            var list = _repo.GetSupplierProductList(categoryId);
+            return Ok(SystemStatus.Success(list, $"Products from supplier ID {categoryId} retrieved."));
+        }
         public class BarcodeActionRequest
         {
             public string Barcode { get; set; }

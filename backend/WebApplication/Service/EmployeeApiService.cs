@@ -16,8 +16,8 @@ namespace WebApplication.Services
         public async Task<List<EmployeeDto>> GetAllAsync()
         {
             var res = await CreateClient().GetAsync(ApiRoutes.Employee.GetAll);
-            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<List<EmployeeDto>>(res);
-            return apiResponse.Data ?? new();
+            var apiResponse = await JsonUtility.DeserializeWrappedListAsync<EmployeeDto>(res);
+            return apiResponse;
         }
 
         public async Task<EmployeeDto?> GetByIdAsync(int id)

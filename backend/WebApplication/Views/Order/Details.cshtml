@@ -1,0 +1,49 @@
+﻿@model Tuple<WebApplication.Models.Dto.OrderDto, List<WebApplication.Models.Dto.OrderDetailDto>>
+@{
+    ViewData["Title"] = "Order Details";
+    var order = Model.Item1;
+    var details = Model.Item2;
+}
+
+<h2 class="text-2xl font-bold mb-4">Order #@order.OrderId Details</h2>
+
+<div class="mb-6">
+    <p><strong>Order Date:</strong> @order.OrderDate.ToString("yyyy-MM-dd")</p>
+    <p><strong>Customer ID:</strong> @order.CustomerId</p>
+    <p><strong>Employee ID:</strong> @order.EmployeeId</p>
+    <p><strong>Outlet ID:</strong> @order.OutletId</p>
+    <p><strong>Warehouse ID:</strong> @order.WarehouseId</p>
+</div>
+
+<h3 class="text-xl font-semibold mb-2">Order Items</h3>
+
+<table class="min-w-full bg-white border border-gray-200 shadow-md rounded">
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="px-4 py-2">Product ID</th>
+            <th class="px-4 py-2">Quantity</th>
+            <th class="px-4 py-2">Unit Price</th>
+            <th class="px-4 py-2">Discount</th>
+            <th class="px-4 py-2">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in details)
+        {
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-2">@item.ProductId</td>
+                <td class="px-4 py-2">@item.Quantity</td>
+                <td class="px-4 py-2">@item.UnitPriceAtTimeOfSale.ToString("C")</td>
+                <td class="px-4 py-2">@item.DiscountApplied.ToString("C")</td>
+                <td class="px-4 py-2">
+                    @{
+                        var total = (item.UnitPriceAtTimeOfSale * item.Quantity) - item.DiscountApplied;
+                    }
+                    @total.ToString("C")
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="inline-block mt-4 text-blue-600 hover:underline">← Back to Orders</a>
