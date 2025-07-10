@@ -44,3 +44,8 @@ wwwroot/css/site.css
 
 # Lock file frontend
 package-lock.json
+
+**/appsettings*.json
+**/client_secret*.json
+**/grocery-*.json
+
