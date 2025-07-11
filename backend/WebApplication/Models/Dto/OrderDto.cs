@@ -21,6 +21,8 @@ namespace WebApplication.Models.Dto
 
         [JsonPropertyName("warehouseId")]
         public int? WarehouseId { get; set; }
+        [JsonIgnore]
+        public List<OrderItemDto> Items { get; set; } = new();
     }
 
 }

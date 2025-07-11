@@ -1,4 +1,10 @@
-﻿namespace WebApplication.Helpers
+﻿using Newtonsoft.Json;
+using System.Net.Http;
+using System.Security.Claims;
+using WebApplication.Constants;
+using WebApplication.Models.Dto;
+
+namespace WebApplication.Helpers
 {
     public static class ApiEndpointsHelper
     {
@@ -25,5 +31,20 @@
             var query = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
             return $"{basePath}?{query}";
         }
+
+        //public async Task<int?> GetEmployeeIdByFullNameAsync(string fullName)
+        //{
+        //    var client = _httpClientFactory.CreateClient();
+        //    var response = await client.GetAsync($"{ApiRoutes.Employees.SearchByName}?name={Uri.EscapeDataString(fullName)}");
+
+        //    if (!response.IsSuccessStatusCode)
+        //        return null;
+
+        //    var json = await response.Content.ReadAsStringAsync();
+        //    var employee = JsonConvert.DeserializeObject<EmployeeDto>(json);
+
+        //    return employee?.EmployeeId;
+        //}
+
     }
 }

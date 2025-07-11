@@ -1,0 +1,44 @@
+﻿@model WebApplication.Models.Dto.OrderOrInvoiceDto
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="CustomerName">Customer Name</label>
+        <input asp-for="CustomerName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Is Paid?</label>
+        <input asp-for="IsPaid" type="checkbox" /> Invoice (Paid)
+    </div>
+
+    <div>
+        <h4>Items</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ProductId</th>
+                    <th>Quantity</th>
+                    <th>UnitPrice</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <input asp-for="Items[@i].ProductId" class="form-control" />
+                        </td>
+                        <td>
+                            <input asp-for="Items[@i].Quantity" class="form-control" />
+                        </td>
+                        <td>
+                            <input asp-for="Items[@i].UnitPrice" class="form-control" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>

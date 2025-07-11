@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Core;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,15 @@ namespace Repositories.Services
             }
 
             var json = JObject.Parse(content);
+            var accessToken = json["access_token"]?.ToString() ?? "fail to get accessToekn";
+
+            Console.WriteLine($"[OAuth Debug] Access token: {accessToken}");
+
+            // Gửi token info để kiểm tra scope
+            var debugClient = new HttpClient();
+            var tokenInfo = await debugClient.GetStringAsync($"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={accessToken}");
+            Console.WriteLine($"[OAuth Debug] Token info: {tokenInfo}");
+
 
             return json["access_token"]?.ToString() ?? throw new Exception("Access token fetch failed");
         }

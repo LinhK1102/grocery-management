@@ -70,6 +70,26 @@ namespace WebApplication.Helpers
                 ? icon
                 : "fa-box";
         }
+
+        public static OrderDto ConvertToOrderDto(OrderOrInvoiceDto input, int customerId, int employeeId, int? outletId = null, int? warehouseId = null)
+        {
+            return new OrderDto
+            {
+                OrderDate = input.OrderDate,
+                CustomerId = customerId,
+                EmployeeId = employeeId,
+                OutletId = outletId,
+                WarehouseId = warehouseId,
+                Items = input.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+
+            };
+        }
+
     }
 
 }

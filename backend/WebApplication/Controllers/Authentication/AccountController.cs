@@ -68,6 +68,7 @@ namespace WebApplication.Controllers.Authentication
             var fullName = apiResult?.Data?.FullName;
             var role = apiResult?.Data?.Role ?? "User";
 
+            //var employeeId = apiResult?.Data?.EmployeeId?.ToString() ?? "";
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, model.Email),

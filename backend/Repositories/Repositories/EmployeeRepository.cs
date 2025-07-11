@@ -26,7 +26,7 @@ namespace Repositories.Repositories
 
         public List<Employee> GetAllEmployees() => _dao.GetAllEmployees();
         public Employee GetEmployeeById(int id) => _dao.GetEmployeeById(id);
-        public void CreateEmployee(Employee e) => _dao.CreateEmployee(e);
+        public Employee CreateEmployee(Employee e) => _dao.CreateEmployee(e);
         public async Task<ApiResponse<EmployeeRegisterResponse>> RegisterAsync(EmployeeRegisterRequest request)
         {
             var existing = await _dao.GetByEmailAsync(request.Email);
@@ -77,8 +77,8 @@ namespace Repositories.Repositories
         }
 
 
-        public void UpdateEmployee(Employee e) => _dao.UpdateEmployee(e);
-        public void DeleteEmployee(int id) => _dao.DeleteEmployee(id);
+        public Employee UpdateEmployee(Employee e) => _dao.UpdateEmployee(e);
+        public bool DeleteEmployee(int id) => _dao.DeleteEmployee(id);
         public List<Employee> GetTopSellingEmployees() => _dao.GetTopSellingEmployees();
         public async Task<ApiResponse<EmployeeLoginResponse>> LoginAsync(EmployeeLoginRequest request)
         {
@@ -142,6 +142,14 @@ namespace Repositories.Repositories
             };
         }
 
+        public async Task<Employee?> GetEmployeeByEmployeeName(string employeeName)
+        {
+            return await _dao.GetByNameAsync(employeeName);
+        }
 
+        //public async List<Employee> GetEmployeeBySearchTerm()
+        //{
+        //    return await _dao.
+        //}
     }
 }

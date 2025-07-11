@@ -13,11 +13,13 @@ namespace Repositories.Interfaces
     {
         List<Employee> GetAllEmployees();
         Employee GetEmployeeById(int id);
+        Task<Employee?> GetEmployeeByEmployeeName(string employeeName);
         Task<ApiResponse<EmployeeLoginResponse>> LoginAsync(EmployeeLoginRequest request);
         Task<ApiResponse<EmployeeRegisterResponse>> RegisterAsync(EmployeeRegisterRequest request);
-        void CreateEmployee(Employee e);
-        void UpdateEmployee(Employee e);
-        void DeleteEmployee(int id);
+        Employee CreateEmployee(Employee e);
+        Employee UpdateEmployee(Employee e);
+        bool DeleteEmployee(int id);
         List<Employee> GetTopSellingEmployees();
+        //List<Employee> GetEmployeeBySearchTerm();
     }
 }

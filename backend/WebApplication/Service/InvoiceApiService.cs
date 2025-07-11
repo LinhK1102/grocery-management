@@ -1,4 +1,5 @@
-﻿using WebApplication.Models.Dto;
+﻿using WebApplication.Constants;
+using WebApplication.Models.Dto;
 
 namespace WebApplication.Service
 {
@@ -27,6 +28,12 @@ namespace WebApplication.Service
 
             var result = await response.Content.ReadFromJsonAsync<InvoiceDto>();
             return result;
+        }
+
+        public async Task<bool> CreateAsync(OrderDto dto)
+        {
+            var res = await _httpClient.PostAsJsonAsync(ApiRoutes.Orders.Create, dto);
+            return res.IsSuccessStatusCode;
         }
     }
 }

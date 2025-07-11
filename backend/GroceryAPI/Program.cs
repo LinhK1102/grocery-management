@@ -16,6 +16,9 @@ using System;
 using Repositories.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+using Microsoft.AspNetCore.OData;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -30,6 +33,8 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader();
         });
 });
+
+
 
 
 // Thêm dịch vụ DbContext
@@ -84,13 +89,26 @@ builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
 //
 builder.Services.AddHttpClient<IBarcodeRepository, BarcodeRepository>();
-//builder.Services.AddControllers();
+
+IEdmModel GetEdmModel()
+{
+    var builder = new ODataConventionModelBuilder();
+    builder.EntitySet<Employee>("Employees");
+    return builder.GetEdmModel();
+}
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
         options.JsonSerializerOptions.WriteIndented = true;
+    })
+    .AddOData(opt =>
+    {
+        opt.Select().Filter().Expand().OrderBy().Count().SetMaxTop(100)
+            .AddRouteComponents("odata", GetEdmModel());
     });
+
 
 builder.Services.AddSignalR();
 
@@ -138,8 +156,15 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
     options.Scope.Add("https://www.googleapis.com/auth/drive.metadata.readonly");
+    options.Scope.Add("https://www.googleapis.com/auth/spreadsheets");
+    options.Scope.Add("https://www.googleapis.com/auth/drive.file");
+
     options.SaveTokens = true;
+
+    // Thêm dòng sau để buộc Google hỏi lại quyền (rất quan trọng nếu user đã từng đăng nhập)
+    options.AuthorizationEndpoint += "?prompt=consent&access_type=offline";
 });
 
 

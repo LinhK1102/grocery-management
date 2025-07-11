@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
+using System.Web.Http.OData;
 using Utility.Common;
 
 namespace GroceryAPI.Controllers
@@ -64,5 +65,22 @@ namespace GroceryAPI.Controllers
             var topEmployees = _employeeRepository.GetTopSellingEmployees();
             return Ok(SystemStatus.Success(topEmployees, "Top selling employees retrieved."));
         }
+
+        [EnableQuery]
+        [HttpGet("search/")]
+        public IActionResult Search()
+        {
+            var all = _employeeRepository.GetAllEmployees(); // return IQueryable<Employee>
+            return Ok(all);
+        }
+
+        [HttpGet("search/{employeeeName}")]
+        public IActionResult GetEmployeeByEmployeeeName(string employeeeName)
+        {
+            var topEmployees = _employeeRepository.GetTopSellingEmployees();
+            return Ok(SystemStatus.Success(topEmployees, "Top selling employees retrieved."));
+        }
+
+
     }
 }

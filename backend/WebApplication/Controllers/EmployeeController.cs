@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication.Models.Dto;
 using WebApplication.Services;
 
@@ -79,5 +80,20 @@ namespace WebApplication.Controllers
             var success = await _employeeApiService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
+        //[HttpGet("search")]
+        //public IActionResult SearchByName([FromQuery] string name)
+        //{
+        //    var employee = await _employeeApiService.Sear
+        //    if (employee == null)
+        //        return NotFound();
+
+        //    return Ok(new
+        //    {
+        //        employee.EmployeeId,
+        //        employee.FullName
+        //    });
+        //}
+
     }
 }
