@@ -14,9 +14,9 @@ namespace BusinessObjects.Entities
         public string WarehouseLocation { get; set; }
 
         [JsonIgnore]
-        public ICollection<Order> Orders { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
         [JsonIgnore]
-        public ICollection<ProductWarehouse> ProductWarehouses { get; set; }
+        public ICollection<ProductWarehouse> ProductWarehouses { get; set; } = new List<ProductWarehouse>();
     }
 
 }

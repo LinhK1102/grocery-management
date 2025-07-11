@@ -15,7 +15,18 @@ namespace DataAccess.DAO
         public List<Warehouse> GetAllWarehouses() => _context.Warehouses.OrderBy(w => w.WarehouseId).ToList();
         public Warehouse GetWarehouseById(int id) => _context.Warehouses.Find(id);
         public Warehouse CreateWarehouse(Warehouse w) { _context.Warehouses.Add(w); _context.SaveChanges(); return w; }
-        public Warehouse UpdateWarehouse(Warehouse w) { _context.Warehouses.Update(w); _context.SaveChanges(); return w; }
+        public Warehouse UpdateWarehouse(Warehouse w) 
+        {
+            var existing = _context.Warehouses.FirstOrDefault(x => x.WarehouseId == w.WarehouseId);
+            if (existing == null) return null;
+
+            // Update từng trường
+            existing.WarehouseName = w.WarehouseName;
+            existing.WarehouseLocation = w.WarehouseLocation;
+
+            _context.SaveChanges();
+            return existing;
+        }
         public bool DeleteWarehouse(int id)
         {
             var w = _context.Warehouses.Find(id);

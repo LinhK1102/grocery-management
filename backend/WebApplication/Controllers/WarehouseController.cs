@@ -55,7 +55,7 @@ namespace WebApplication.Controllers
             if (success) return RedirectToAction(nameof(Index));
 
             ModelState.AddModelError("", "Unable to update warehouse.");
-            return View(warehouse);
+            return RedirectToAction(nameof(Edit), id);
         }
 
         [HttpPost]

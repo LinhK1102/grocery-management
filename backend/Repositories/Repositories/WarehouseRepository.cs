@@ -30,16 +30,10 @@ namespace Repositories.Repositories
             existingWarehouse = _dao.GetWarehouseByName(UtitlityConstant.Undefined);
             if (w.WarehouseId == 0 && existingWarehouse == null)
             {
-                return _dao.CreateWarehouse(w);
+                return _dao.CreateWarehouse(new Warehouse { WarehouseName = UtitlityConstant.Undefined, WarehouseLocation = UtitlityConstant.Undefined});
             }
 
-            // If the warehouse name is not "Undefinded" but it already exists, create a new default "Undefinded" warehouse
-            else if (existingWarehouse != null)
-            {
-                return _dao.CreateWarehouse(new Warehouse { WarehouseName = UtitlityConstant.Undefined });
-            }
-
-            return null;
+            return _dao.CreateWarehouse(w);
         }
 
         public Warehouse UpdateWarehouse(Warehouse w)

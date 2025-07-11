@@ -3,24 +3,26 @@
     ViewData["Title"] = "Create Warehouse";
 }
 
-<h2 class="text-2xl font-bold mb-4">Create New Warehouse</h2>
+<div class="container mt-5">
+    <h2 class="mb-4">Create New Warehouse</h2>
 
-<form asp-action="Create" method="post" class="space-y-4">
-    <div>
-        <label asp-for="WarehouseName" class="block font-medium">Name</label>
-        <input asp-for="WarehouseName" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="WarehouseName" class="text-red-500 text-sm"></span>
-    </div>
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label asp-for="WarehouseName" class="form-label">Warehouse Name</label>
+            <input asp-for="WarehouseName" class="form-control" />
+            <span asp-validation-for="WarehouseName" class="text-danger"></span>
+        </div>
 
-    <div>
-        <label asp-for="WarehouseLocation" class="block font-medium">Location</label>
-        <input asp-for="WarehouseLocation" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="WarehouseLocation" class="text-red-500 text-sm"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="WarehouseLocation" class="form-label">Location</label>
+            <input asp-for="WarehouseLocation" class="form-control" />
+            <span asp-validation-for="WarehouseLocation" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Create</button>
-    <a asp-action="Index" class="ml-4 text-gray-600 hover:underline">Back to List</a>
-</form>
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-link">Back to List</a>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
