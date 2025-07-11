@@ -11,8 +11,8 @@ namespace Repositories.Interfaces
     {
         List<Supplier> GetAllSuppliers();
         Supplier GetSupplierById(int id);
-        void CreateSupplier(Supplier s);
-        void UpdateSupplier(Supplier s);
+        Supplier CreateSupplier(Supplier s);
+        Supplier UpdateSupplier(Supplier s);
         void DeleteSupplier(int id);
 
         bool DeleteSupplierWithDependencyCheck(int supplierId);

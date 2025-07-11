@@ -1,5 +1,7 @@
-﻿using System.Text.Json;
+﻿using Microsoft.AspNetCore.SignalR;
+using System.Text.Json;
 using Utility.Common;
+using Utility.Hubs;
 using WebApplication.Constants;
 using WebApplication.Helpers;
 using WebApplication.Models;
@@ -10,8 +12,8 @@ namespace WebApplication.Services
 {
     public class EmployeeApiService : ApiClientService
     {
-        public EmployeeApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config)
-            : base(factory, accessor, config) { }
+        public EmployeeApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<List<EmployeeDto>> GetAllAsync()
         {

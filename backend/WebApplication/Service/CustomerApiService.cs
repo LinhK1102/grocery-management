@@ -1,4 +1,6 @@
-﻿using Utility.Common;
+﻿using Microsoft.AspNetCore.SignalR;
+using Utility.Common;
+using Utility.Hubs;
 using WebApplication.Constants;
 using WebApplication.Models;
 using WebApplication.Models.Dto;
@@ -8,8 +10,8 @@ namespace WebApplication.Services
 {
     public class CustomerApiService : ApiClientService
     {
-        public CustomerApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config)
-            : base(factory, accessor, config) { }
+        public CustomerApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<List<CustomerDto>> SearchCustomersAsync(string searchTerm)
         {

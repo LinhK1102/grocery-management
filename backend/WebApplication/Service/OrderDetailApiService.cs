@@ -1,6 +1,8 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.AspNetCore.SignalR;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Utility.Common;
+using Utility.Hubs;
 using WebApplication.Constants;
 using WebApplication.Models;
 using WebApplication.Models.Dto;
@@ -10,8 +12,8 @@ namespace WebApplication.Services
 {
     public class OrderDetailApiService : ApiClientService
     {
-        public OrderDetailApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config)
-            : base(factory, accessor, config) { }
+        public OrderDetailApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<List<OrderDetailDto>> GetByOrderIdAsync(int orderId)
         {

@@ -6,13 +6,15 @@ using Utility.Common;
 using WebApplication.Constants;
 using WebApplication.Helpers;
 using WebApplication.Models.Dto;
+using Microsoft.AspNetCore.SignalR;
+using Utility.Hubs;
 
 namespace WebApplication.Services
 {
     public class WarehouseApiService : ApiClientService
     {
-        public WarehouseApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config)
-            : base(factory, accessor, config) { }
+        public WarehouseApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<List<WarehouseDto>> GetAllAsync()
         {

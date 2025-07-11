@@ -3,13 +3,15 @@ using WebApplication.Constants;
 using WebApplication.Models.Dto;
 using WebApplication.Service;
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
+using Utility.Hubs;
 
 namespace WebApplication.Services
 {
     public class ProductApiService : ApiClientService
     {
-        public ProductApiService(IHttpClientFactory factory, IHttpContextAccessor contextAccessor, IConfiguration config)
-            : base(factory, contextAccessor, config) { }
+        public ProductApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<List<ProductDto>> GetAllAsync()
         {

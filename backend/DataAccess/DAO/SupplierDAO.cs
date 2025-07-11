@@ -20,6 +20,9 @@ namespace DataAccess.DAO
         {
             try
             {
+                if (s.Products == null)
+                    s.Products = new List<Product>();
+
                 _context.Suppliers.Add(s);
                 _context.SaveChanges();
                 return s;
@@ -35,14 +38,20 @@ namespace DataAccess.DAO
         {
             try
             {
-                _context.Suppliers.Update(s);
+                var existing = _context.Suppliers.FirstOrDefault(x => x.SupplierId == s.SupplierId);
+                if (existing == null) return null;
+
+                // Update từng trường
+                existing.SupplierName = s.SupplierName;
+                existing.SupplierEmail = s.SupplierEmail;
+                existing.SupplierPhoneNumber = s.SupplierPhoneNumber;
+
                 _context.SaveChanges();
-                return s;
+                return existing;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating supplier: {ex.Message}");
-                return null;
+                throw new InvalidOperationException("Error update suplliers.");
             }
         }
 
@@ -82,7 +91,8 @@ namespace DataAccess.DAO
                 .ToList();
         }
 
-        public Supplier GetSupplierBySuplierName(string supplierName) => _context.Suppliers.FirstOrDefault(s => s.SupplierName == supplierName);
+        public Supplier GetSupplierBySuplierName(string supplierName) 
+            => _context.Suppliers.FirstOrDefault(s => s.SupplierName.Contains(supplierName));
 
         public int GetOrCreateUnknownSupplierId(Supplier supplier)
         {

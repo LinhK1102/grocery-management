@@ -1,5 +1,9 @@
-﻿using BusinessObjects.Entities;
+﻿using AutoMapper;
+using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
+using GroceryAPI.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Repositories.Interfaces;
 using Utility.Common;
 
@@ -10,10 +14,14 @@ namespace GroceryAPI.Controllers
     public class SupplierController : ControllerBase
     {
         private readonly ISupplierRepository _supplierRepository;
+        private readonly IHubContext<NotificationHubs> _notificationHub;
+        private readonly IMapper _mapper;
 
-        public SupplierController(ISupplierRepository supplierRepository)
+        public SupplierController(ISupplierRepository supplierRepository, IMapper mapper, IHubContext<NotificationHubs> notificationHub)
         {
             _supplierRepository = supplierRepository;
+            _notificationHub = notificationHub;
+            _mapper = mapper;
         }
 
         [HttpGet("get-all")]
@@ -41,19 +49,34 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public IActionResult UpdateSupplier(int id, [FromBody] Supplier s)
+        public IActionResult UpdateSupplier(int id, [FromBody] UpdateSupplierDto s)
         {
             if (id != s.SupplierId)
+            {
+                _notificationHub.Clients.All.SendAsync("ReceiveNotification", $"✅ Supplier '{s.SupplierName}' updated fail.");
                 return BadRequest(SystemStatus.Fail("Supplier ID mismatch."));
+            }
+            var supplier = _mapper.Map<Supplier>(s);
+            var result = _supplierRepository.UpdateSupplier(supplier);
+            if (result == null)
+            {
+                _notificationHub.Clients.All.SendAsync("ReceiveNotification", $"✅ Supplier '{s.SupplierName}' updated fail.");
+                return NotFound(SystemStatus.Fail($"Supplier with ID {id} not found."));
+            }
 
-            _supplierRepository.UpdateSupplier(s);
-            return Ok(SystemStatus.Success(s, "Supplier updated successfully."));
+            _notificationHub.Clients.All.SendAsync("ReceiveNotification", $"✅ Supplier '{s.SupplierName}' updated successfully.");
+
+            return Ok(SystemStatus.Success(result, "Supplier updated successfully."));
         }
+
 
         [HttpDelete("delete/{id}")]
         public IActionResult DeleteSupplier(int id)
         {
             var result = _supplierRepository.DeleteSupplierWithDependencyCheck(id);
+            if (result) _notificationHub.Clients.All.SendAsync("ReceiveNotification", "Supplier updated successfully.");
+            else _notificationHub.Clients.All.SendAsync("ReceiveNotification", "Supplier updated successfully.");
+
             return result
                 ? Ok(SystemStatus.Success($"Supplier with ID {id} deleted successfully."))
                 : BadRequest(SystemStatus.Fail("Cannot delete supplier with existing dependencies."));

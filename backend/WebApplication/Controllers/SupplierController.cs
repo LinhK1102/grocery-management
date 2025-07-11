@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Utility.Hubs;
+using WebApplication.Helpers;
 using WebApplication.Models.Dto;
 using WebApplication.Services;
 
@@ -7,10 +11,12 @@ namespace WebApplication.Controllers
     public class SupplierController : Controller
     {
         private readonly SupplierApiService _supplierApiService;
-
-        public SupplierController(SupplierApiService supplierApiService)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        
+        public SupplierController(SupplierApiService supplierApiService, IHubContext<NotificationHub> hubContext)
         {
             _supplierApiService = supplierApiService;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index()
@@ -61,18 +67,18 @@ namespace WebApplication.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, SupplierDto supplier)
         {
-            if (id != supplier.SupplierId)
-                return NotFound();
-
             if (!ModelState.IsValid)
-                return View(supplier);
+                return BadRequest(ModelState);
 
             var success = await _supplierApiService.UpdateAsync(id, supplier);
-            if (success)
-                return RedirectToAction(nameof(Index));
 
-            ModelState.AddModelError("", "Unable to update supplier.");
-            return View(supplier);
+            Response.Cookies.Append("Status", "Fail", new CookieOptions { Expires = DateTimeOffset.UtcNow.AddSeconds(5) });
+            Response.Cookies.Append("Message", "Cập nhật thất bại!", new CookieOptions { Expires = DateTimeOffset.UtcNow.AddSeconds(5) });
+
+            if (success)
+                RedirectToAction(nameof(Index));
+
+            return RedirectToAction(nameof(Edit), new { id = supplier.SupplierId });
         }
 
         public async Task<IActionResult> Delete(int id)
@@ -89,6 +95,7 @@ namespace WebApplication.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var success = await _supplierApiService.DeleteAsync(id);
+            
             return RedirectToAction(nameof(Index));
         }
     }

@@ -6,13 +6,15 @@ using Repositories.DTOs;
 using Utility.Common;
 using WebApplication.Constants;
 using WebApplication.Models.Dto;
+using Microsoft.AspNetCore.SignalR;
+using Utility.Hubs;
 
 namespace WebApplication.Services
 {
     public class AuthApiService : ApiClientService
     {
-        public AuthApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config)
-            : base(factory, accessor, config) { }
+        public AuthApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<EmployeeDto?> LoginAsync(EmployeeLoginRequest request)
         {

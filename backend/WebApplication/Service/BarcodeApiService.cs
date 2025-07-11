@@ -7,13 +7,15 @@ using WebApplication.Helpers;
 using ProductDto = WebApplication.Models.Dto.ProductDto;
 using BusinessObjects.DTOs;
 using Utility.Common;
+using Utility.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace WebApplication.Services
 {
     public class BarcodeApiService : ApiClientService
     {
-        public BarcodeApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config)
-            : base(factory, accessor, config) { }
+        public BarcodeApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
 
         public async Task<UpcProductResponse?> SearchProductAsync(string barcode)
         {

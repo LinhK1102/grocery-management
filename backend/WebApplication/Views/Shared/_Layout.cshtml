@@ -70,33 +70,24 @@
 
     @await RenderSectionAsync("Scripts", required: false)
 
-    <!-- TempData alert modal -->
-    @if (TempData[StatusConstants.TempDataStatus] is string status && TempData[StatusConstants.TempDataMessage] is string message)
-    {
-        var icon = status == StatusConstants.Success ? "bi-check-circle-fill" : "bi-x-circle-fill";
-        var alertClass = status == StatusConstants.Success ? "success" : "danger";
-        <div class="modal fade show" id="statusModal" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow rounded-4">
-                    <div class="modal-header bg-light">
-                        <h5 class="modal-title">Status</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                                onclick="document.getElementById('statusModal').style.display = 'none'; document.body.classList.remove('modal-open'); document.querySelector('.modal-backdrop')?.remove();">
-                        </button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <div class="alert alert-@alertClass mb-0">
-                            <i class="bi @icon me-2"></i> @message
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-backdrop fade show"></div>
-    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 
     @section Scripts {
         <script>
+                const connection = new signalR.HubConnectionBuilder()
+                .withUrl("http://localhost:5100/notificationHub") // URL API
+                .build();
+
+            connection.on("ReceiveNotification", function (message) {
+                const alert = document.createElement("div");
+                alert.className = "alert alert-info position-fixed top-0 end-0 m-4 shadow";
+                alert.innerHTML = `<i class="bi bi-info-circle me-2"></i>${message}`;
+                document.body.appendChild(alert);
+                setTimeout(() => alert.remove(), 5000);
+            });
+
+            connection.start().catch(err => console.error(err));
+
             $(function () {
                 $('.select2').select2({
                     placeholder: 'Select an option',
@@ -104,6 +95,12 @@
                     width: '100%'
                 });
             });
+
+                 function closeStatusModal() {
+                document.getElementById('statusModal')?.remove();
+                document.getElementById('modalBackdrop')?.remove();
+            }
+            setTimeout(closeStatusModal, 5000);
         </script>
     }
 

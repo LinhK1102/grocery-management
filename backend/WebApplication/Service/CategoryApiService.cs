@@ -1,6 +1,8 @@
 ﻿
 using BusinessObjects.Entities;
+using Microsoft.AspNetCore.SignalR;
 using Utility.Common;
+using Utility.Hubs;
 using WebApplication.Constants;
 using WebApplication.Models;
 using WebApplication.Models.Dto;
@@ -9,8 +11,8 @@ namespace WebApplication.Service
 {
     public class CategoryApiService : ApiClientService
     {
-        public CategoryApiService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IConfiguration config) 
-            : base(httpClientFactory, httpContextAccessor, config) { }
+        public CategoryApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
+            : base(factory, accessor, config, hubContext) { }
         public async Task<List<CategoryDto>> GetAllAsync()
         {
             var response = await CreateClient().GetAsync(ApiRoutes.Category.GetAll);

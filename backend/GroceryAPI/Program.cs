@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.AspNetCore.OData;
+using Utility.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -46,6 +47,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.Configure<ApiSettings>(builder.Configuration);
 
+//auto mapping
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // --- DAOs: Direct database access ---
 builder.Services.AddScoped<CustomerDAO>();
