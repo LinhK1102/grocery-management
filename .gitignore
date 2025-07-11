@@ -46,6 +46,7 @@ wwwroot/css/site.css
 package-lock.json
 
 **/appsettings*.json
+**/appsettings.Development.json
 **/client_secret*.json
 **/grocery-*.json
 
