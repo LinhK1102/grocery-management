@@ -3,30 +3,34 @@
     ViewData["Title"] = "Create Supplier";
 }
 
-<h2 class="text-2xl font-bold mb-4">Create New Supplier</h2>
+<div class="container mt-5">
+    <h2 class="mb-4 fw-bold">Create New Supplier</h2>
 
-<form asp-action="Create" method="post" class="space-y-4">
-    <div>
-        <label asp-for="SupplierName" class="block font-medium">Name</label>
-        <input asp-for="SupplierName" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="SupplierName" class="text-red-500 text-sm"></span>
-    </div>
+    <form asp-action="Create" method="post" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label asp-for="SupplierName" class="form-label">Name</label>
+            <input asp-for="SupplierName" class="form-control" />
+            <span asp-validation-for="SupplierName" class="text-danger small"></span>
+        </div>
 
-    <div>
-        <label asp-for="SupplierEmail" class="block font-medium">Email</label>
-        <input asp-for="SupplierEmail" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="SupplierEmail" class="text-red-500 text-sm"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="SupplierEmail" class="form-label">Email</label>
+            <input asp-for="SupplierEmail" class="form-control" />
+            <span asp-validation-for="SupplierEmail" class="text-danger small"></span>
+        </div>
 
-    <div>
-        <label asp-for="SupplierPhoneNumber" class="block font-medium">Phone Number</label>
-        <input asp-for="SupplierPhoneNumber" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="SupplierPhoneNumber" class="text-red-500 text-sm"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="SupplierPhoneNumber" class="form-label">Phone Number</label>
+            <input asp-for="SupplierPhoneNumber" class="form-control" />
+            <span asp-validation-for="SupplierPhoneNumber" class="text-danger small"></span>
+        </div>
 
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Create</button>
-    <a asp-action="Index" class="ml-4 text-gray-600 hover:underline">Back to List</a>
-</form>
+        <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
