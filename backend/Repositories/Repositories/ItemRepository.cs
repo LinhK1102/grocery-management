@@ -22,6 +22,9 @@ namespace Repositories.Repositories
         public Item GetItemByName(string id) => _dao.GetItemByBatchCode(id);
         public Item CreateItem(Item item)
         {
+            if (item.ImportedDate == null)
+                item.ImportedDate = DateTime.UtcNow;
+
            return _dao.AddItem(item);
         }
         public Item UpdateItem(Item item)

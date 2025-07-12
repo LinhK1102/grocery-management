@@ -13,12 +13,14 @@ namespace GroceryAPI.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _repo;
+        private readonly IItemRepository _itemRepo;
         private readonly IHubContext<NotificationHubs> _notificationHub; 
 
-        public ProductsController(IProductRepository repo, IHubContext<NotificationHubs> notificationHub)
+        public ProductsController(IProductRepository repo, IHubContext<NotificationHubs> notificationHub, IItemRepository itemRepo)
         {
             _repo = repo;
             _notificationHub = notificationHub;
+            _itemRepo = itemRepo;
         }
 
         [HttpGet("get-all")]
@@ -124,6 +126,14 @@ namespace GroceryAPI.Controllers
             public string Barcode { get; set; }
             public int Action { get; set; }  // "sell" or "receive"
             public int Quantity { get; set; }
+        }
+
+        [HttpPost("items-create")]
+        public IActionResult CreateItems([FromBody] Item item)
+        {
+            _itemRepo.CreateItem(item);
+            return CreatedAtAction(nameof(GetProductById), new { id = item.ProductId },
+                SystemStatus.Success(item, "Items created successfully."));
         }
     }
 }

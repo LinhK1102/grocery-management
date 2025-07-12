@@ -1,44 +1,241 @@
 ﻿@model WebApplication.Models.Dto.OrderOrInvoiceDto
+@using WebApplication.Models.Dto
+@using System.Text.Json
 
-<form asp-action="Create" method="post">
-    <div class="mb-3">
-        <label asp-for="CustomerName">Customer Name</label>
-        <input asp-for="CustomerName" class="form-control" />
-    </div>
+@{
+    ViewData["Title"] = "Create Order / Invoice";
+    var products = ViewBag.Products as List<ProductDto> ?? new();
+}
 
-    <div class="mb-3">
-        <label>Is Paid?</label>
-        <input asp-for="IsPaid" type="checkbox" /> Invoice (Paid)
-    </div>
+<div class="container mt-4">
+    <form asp-action="Create" method="post">
+        <div class="row align-items-center mb-3">
+            <div class="col-md-8">
+                <h2 class="fw-bold">@ViewData["Title"]</h2>
+            </div>
+            <div class="col-md-4 text-end">
+                <input asp-for="OrderDate" type="hidden" />
+                <p class="form-control-plaintext">@Model.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")</p>
+            </div>
+        </div>
 
-    <div>
-        <h4>Items</h4>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ProductId</th>
-                    <th>Quantity</th>
-                    <th>UnitPrice</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 0; i < Model.Items.Count; i++)
-                {
-                    <tr>
-                        <td>
-                            <input asp-for="Items[@i].ProductId" class="form-control" />
-                        </td>
-                        <td>
-                            <input asp-for="Items[@i].Quantity" class="form-control" />
-                        </td>
-                        <td>
-                            <input asp-for="Items[@i].UnitPrice" class="form-control" />
-                        </td>
-                    </tr>
+        <div class="row mb-4">
+            <!-- QR Code Column -->
+            <div class="col-md-3">
+                <div class="qr-wrapper bg-light border rounded position-relative">
+                    <div id="qrcode" class="qr-inner"></div>
+                    <small class="text-muted position-absolute bottom-0 start-50 translate-middle-x mb-2">QR Code</small>
+                </div>
+            </div>
+
+            <!-- Customer and Payment Info -->
+            <div class="col-md-9">
+                <div class="mb-3">
+                    <label asp-for="CustomerName" class="form-label">Customer Name</label>
+                    <input asp-for="CustomerName" class="form-control" id="CustomerName" value="Unknown" />
+                    <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input asp-for="IsPaid" class="form-check-input" id="IsPaid" />
+                    <label asp-for="IsPaid" class="form-check-label">Generate Invoice</label>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="IsBanking" />
+                    <label class="form-check-label" for="IsBanking">Use Banking Payment</label>
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <h5 class="mb-3">Search & Add Products</h5>
+        <div class="position-relative mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search product by name or barcode..." autocomplete="off" />
+            <ul id="searchSuggestions" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></ul>
+        </div>
+
+
+        <h5 class="mb-3">Order Items</h5>
+        <div id="item-container"></div>
+
+        <button type="submit" class="btn btn-success mt-3">Submit</button>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary ms-2 mt-3">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        // ======== 1. Auto-fill CustomerName = "Unknown" nếu người dùng không nhập ========
+        const input = document.getElementById('CustomerName');
+
+        // Khi trang load: nếu chưa có giá trị thì set là "Unknown"
+        if (!input.value.trim()) {
+            input.value = 'Unknown';
+        }
+
+        // Khi người dùng blur (rời khỏi input), nếu rỗng thì set lại "Unknown"
+        input.addEventListener('blur', function () {
+            if (!this.value.trim()) {
+                this.value = 'Unknown';
+            }
+        });
+
+        // Khi submit form: nếu rỗng thì gửi "Unknown"
+        document.querySelector('form').addEventListener('submit', function () {
+            if (!input.value.trim()) {
+                input.value = 'Unknown';
+            }
+        });
+
+        // ======== 2. Convert ViewBag.Products thành JS object ========
+        const products = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        products,
+        new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }
+    ));
+
+        let index = @Model.Items.Count; // dùng để đánh chỉ số item
+
+        // ======== 3. Tạo mã QR ban đầu ========
+        const qrcodeElement = document.getElementById("qrcode");
+        const qrSize = qrcodeElement.offsetWidth || 150; // fallback nếu không có kích thước
+        const qr = new QRCode(qrcodeElement, {
+            text: "Default QR",
+            width: qrSize,
+            height: qrSize
+        });
+
+        // Khi tick checkbox Banking → thay đổi nội dung QR code
+        const bankingCheckbox = document.getElementById("IsBanking");
+        if (bankingCheckbox) {
+            bankingCheckbox.addEventListener("change", function () {
+                qr.clear();
+                if (this.checked) {
+                    qr.makeCode("Banking Payment - Order XYZ");
+                } else {
+                    qr.makeCode("Default QR");
                 }
-            </tbody>
-        </table>
-    </div>
+            });
+        }
 
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+        // ======== 4. Thêm sản phẩm vào danh sách (theo index) ========
+        function addProductRow(product) {
+            const html = `
+            <div class="row mb-3 border-bottom pb-3">
+                <div class="col-md-5">
+                    <label class="form-label">Product</label>
+                    <input name="Items[${index}].ProductName" class="form-control" value="${product.productName}" readonly />
+                    <input type="hidden" name="Items[${index}].Barcode" value="${product.barcodeValue}" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Quantity</label>
+                    <input name="Items[${index}].Quantity" class="form-control" type="number" value="1" min="1" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Unit Price</label>
+                    <input name="Items[${index}].UnitPrice" class="form-control" value="${product.unitPrice}" readonly />
+                </div>
+            </div>`;
+            document.getElementById("item-container").insertAdjacentHTML("beforeend", html);
+            index++;
+        }
+
+        // ======== 5. Xử lý gợi ý sản phẩm bằng dropdown khi nhập vào ô tìm kiếm ========
+        const searchInput = document.getElementById("searchInput");
+        const suggestionsBox = document.getElementById("searchSuggestions");
+
+        searchInput.addEventListener("input", function () {
+            const query = this.value.trim().toLowerCase();
+            suggestionsBox.innerHTML = "";
+
+            if (!query) {
+                suggestionsBox.style.display = "none";
+                return;
+            }
+
+            // Tìm sản phẩm theo tên hoặc barcode (tối đa 5 gợi ý)
+            const matched = products.filter(p =>
+                p.productName.toLowerCase().includes(query) ||
+                (p.barcodeValue && p.barcodeValue.includes(query))
+            ).slice(0, 5);
+
+            // Nếu có kết quả → hiện gợi ý
+            if (matched.length > 0) {
+                matched.forEach(product => {
+                    const li = document.createElement("li");
+                    li.classList.add("list-group-item", "list-group-item-action");
+                    li.textContent = `${product.productName} (${product.barcodeValue})`;
+                    li.addEventListener("click", () => {
+                        addProductRow(product);
+                        searchInput.value = "";
+                        suggestionsBox.innerHTML = "";
+                        suggestionsBox.style.display = "none";
+                    });
+                    suggestionsBox.appendChild(li);
+                });
+                suggestionsBox.style.display = "block";
+            } else {
+                suggestionsBox.style.display = "none";
+            }
+        });
+
+        // Ẩn dropdown khi người dùng blur khỏi input (delay nhỏ để xử lý sự kiện click)
+        searchInput.addEventListener("blur", function () {
+            setTimeout(() => {
+                suggestionsBox.style.display = "none";
+            }, 200);
+        });
+
+        // Tìm sản phẩm bằng Enter (nếu muốn dùng cả 2)
+        searchInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const query = this.value.trim().toLowerCase();
+                const matched = products.find(p =>
+                    p.productName.toLowerCase().includes(query) ||
+                    (p.barcodeValue && p.barcodeValue.includes(query))
+                );
+                if (matched) {
+                    addProductRow(matched);
+                    this.value = "";
+                    suggestionsBox.innerHTML = "";
+                    suggestionsBox.style.display = "none";
+                } else {
+                    alert("Product not found");
+                }
+            }
+        });
+    </script>
+}
+
+
+<style>
+    .qr-wrapper {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 1rem;
+    }
+
+    .qr-inner canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
+    }
+
+    #searchSuggestions li {
+        cursor: pointer;
+    }
+
+    #searchSuggestions li:hover {
+        background-color: #f0f0f0;
+    }
+
+</style>

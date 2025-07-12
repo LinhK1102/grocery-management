@@ -23,7 +23,7 @@ namespace WebApplication.Controllers.Authentication
             _config = config;
         }
 
-        [HttpGet]
+        [HttpGet("login")]
         public IActionResult Login()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -67,6 +67,7 @@ namespace WebApplication.Controllers.Authentication
             var token = apiResult?.Data?.Token;
             var fullName = apiResult?.Data?.FullName;
             var role = apiResult?.Data?.Role ?? "User";
+            //Console.WriteLine("Logged in as: " + role); // check "Employee"
 
             //var employeeId = apiResult?.Data?.EmployeeId?.ToString() ?? "";
             var claims = new List<Claim>
@@ -89,7 +90,7 @@ namespace WebApplication.Controllers.Authentication
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
         }
     }
 }

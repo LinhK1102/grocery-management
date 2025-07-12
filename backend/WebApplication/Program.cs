@@ -37,6 +37,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
+builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
+{
+    options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
+});
+
 // Gọi API + lấy context
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -70,8 +75,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-
-
+// Đặt đúng thứ tự: UseRouting -> UseAuthentication/Authorization -> MapControllers
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -82,6 +87,5 @@ app.MapControllerRoute(
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
-app.UseRouting();
-
 app.Run();
+

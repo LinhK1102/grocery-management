@@ -11,12 +11,14 @@ namespace WebApplication.Controllers
         private readonly OrderApiService _orderApiService;
         private readonly OrderDetailApiService _orderDetailApiService;
         private readonly InvoiceApiService _invoiceApiService;
+        private readonly ProductApiService _productApiService;
 
-        public OrderController(OrderApiService orderApiService, OrderDetailApiService orderDetailApiService, InvoiceApiService invoiceApiService)
+        public OrderController(OrderApiService orderApiService, OrderDetailApiService orderDetailApiService, InvoiceApiService invoiceApiService, ProductApiService productApiService)
         {
             _orderApiService = orderApiService;
             _orderDetailApiService = orderDetailApiService;
             _invoiceApiService = invoiceApiService;
+            _productApiService = productApiService;
         }
 
         public async Task<IActionResult> Index()
@@ -37,11 +39,14 @@ namespace WebApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var model = new OrderOrInvoiceDto
+            var products = await _productApiService.GetAllAsync();
+            ViewBag.Products = products.OrderBy(p => p.ProductName).ToList()
+                                ?? new List<ProductDto>(); ;
+
+            return View(new OrderOrInvoiceDto
             {
-                Items = new List<OrderItemDto> { new() }  // default 1 dòng
-            };
-            return View(model);
+                Items = new List<OrderItemDto> { new() } // item mặc định
+            });
         }
 
         [HttpPost]
@@ -50,27 +55,22 @@ namespace WebApplication.Controllers
             if (!ModelState.IsValid)
                 return View(dto);
 
+            dto.CustomerName = string.IsNullOrWhiteSpace(dto.CustomerName) ? "Unknown" : dto.CustomerName;
+
             if (dto.IsPaid)
             {
-                // Logic xử lý tạo Invoice
-                 //await _invoiceApiService.Create(dto);
-                Console.WriteLine("Creating invoice...");
+                // Gọi service tạo hóa đơn (Invoice)
+                //await _invoiceApiService.CreateAsync(dto); // giả định bạn xử lý được
             }
             else
             {
-                // Logic xử lý tạo Order
-                // Ví dụ giả định bạn có customerId, employeeId...
-                int customerId = dto.CustomerName == null 
-                    ? 1 //await _customerService.GetCustomerIdByNameAsync(dto.CustomerName) 
-                    :0;
-                //int employeeId = ControllerExtensions.GetEmployeeIdFromSession(); // hoặc 1 cách nào đó
-
-                var converted = DtoExtensions.ConvertToOrderDto(dto, customerId, 1);
-                await _orderApiService.CreateAsync(converted);
-                Console.WriteLine("Creating order...");
+                // Gọi service tạo đơn hàng (Order)
+                //await _orderApiService.CreateAsync(dto);
             }
 
-            return RedirectToAction("Index");
+            //return RedirectToAction("Index", "Order");
+            return RedirectToAction("Index", "Home");
         }
+
     }
 }
