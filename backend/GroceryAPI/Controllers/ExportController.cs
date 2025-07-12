@@ -4,15 +4,6 @@ using Repositories.Services;
 using System.Globalization;
 using Utility.Common;
 
-using Microsoft.AspNetCore.Mvc;
-using Utility.Common;
-using Repositories.Interfaces;
-using System.Text;
-using Repositories.Services;
-using System.Globalization;
-using Google.Apis.Sheets.v4.Data;
-using BusinessObjects.Commons;
-
 namespace GroceryAPI.Controllers
 {
     [ApiController]

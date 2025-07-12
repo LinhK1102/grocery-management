@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Entities;
 using DataAccess.DAO;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace Repositories.Repositories
 
         public List<Supplier> GetAllSuppliers() => _dao.GetAllSuppliers();
         public Supplier GetSupplierById(int id) => _dao.GetSupplierById(id);
+        public Supplier GetSupplierByName(string name) => _dao.GetSupplierByName(name);
         public Supplier CreateSupplier(Supplier s)
         {
             if (s.Products == null)
@@ -46,5 +48,25 @@ namespace Repositories.Repositories
 
             return _dao.DeleteSupplierWithDependencyCheck(supplierId);
         }
+
+        public async Task EnsureDefaultSupplierAsync()
+        {
+            if (await GetUndefinedSupplierIdAsync() == 0)
+            {
+                var defaultSupplier = new Supplier
+                {
+                    SupplierName = "Undefined",
+                    SupplierEmail = "unknown@supplier.com",
+                    SupplierPhoneNumber = "0000000000"
+                };
+                CreateSupplier(defaultSupplier);
+            }
+        }
+
+        public async Task<int> GetUndefinedSupplierIdAsync()
+        {
+            return (GetSupplierByName("Undefined"))?.SupplierId ?? 0;
+        }
+
     }
 }

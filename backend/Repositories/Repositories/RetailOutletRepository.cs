@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Common;
 
 namespace Repositories.Repositories
 {
@@ -17,6 +18,7 @@ namespace Repositories.Repositories
 
         public List<RetailOutlet> GetAllRetailOutlets() => _dao.GetAllRetailOutlets();
         public RetailOutlet GetRetailOutletById(int id) => _dao.GetRetailOutletById(id);
+        public RetailOutlet GetRetailOutletByName(string name) => _dao.GetRetailOutletByName(name);
         public RetailOutlet CreateRetailOutlet(RetailOutlet ro)
         {
             // Nếu có ID hợp lệ
@@ -65,6 +67,25 @@ namespace Repositories.Repositories
 
             return newUnassigned;
         }
+
+        public async Task EnsureDefaultRetailOutletAsync()
+        {
+            if (await GetUndefinedRetailOutletIdAsync() == 0)
+            {
+                var defaultOutlet = new RetailOutlet
+                {
+                    RetailOutletName = UtitlityConstant.Undefined,
+                    RetailOutletLocation = "N/A",
+                };
+                _dao.CreateRetailOutlet(defaultOutlet);
+            }
+        }
+
+        public async Task<int> GetUndefinedRetailOutletIdAsync()
+        {
+            return (_dao.GetRetailOutletByName("Undefined"))?.RetailOutletId ?? 0;
+        }
+
 
     }
 

@@ -1,9 +1,14 @@
-﻿using BusinessObjects.Entities;
+﻿using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Repositories.DTOs;
 using Repositories.Interfaces;
+using System.Threading.Tasks;
 using System.Web.Http.OData;
 using Utility.Common;
+using WebApplication.Models.Dto;
 
 namespace GroceryAPI.Controllers
 {
@@ -35,21 +40,40 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateEmployee([FromBody] Employee e)
+        public async Task<IActionResult> CreateEmployee([FromBody] EmployeeRegisterRequest e)
         {
-            _employeeRepository.CreateEmployee(e);
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = e.EmployeeId },
-                SystemStatus.Success(e, "Employee created successfully."));
+            if (string.IsNullOrWhiteSpace(e.Email))
+                return Ok(SystemStatus.Fail("Email is required."));
+
+            var existingEmployee = await _employeeRepository.GetEmployeeByEmail(e.Email);
+            if (existingEmployee != null)
+                return Ok(SystemStatus.Fail($"Email {e.Email} already existed."));
+
+            var createdEmployee = (await _employeeRepository.RegisterAsync(e)).Data;
+            return CreatedAtAction(nameof(GetEmployeeByEmployeeeName), new { employeeeName = e.EmployeeName },
+                SystemStatus.Success(createdEmployee, "Employee created successfully."));
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateEmployee(int id, [FromBody] Employee e)
+        public IActionResult UpdateEmployee(int id, [FromBody] EmployeeDto dto)
         {
-            if (id != e.EmployeeId)
+            if (id != dto.EmployeeId)
                 return BadRequest(SystemStatus.Fail("Mismatched employee ID."));
 
-            _employeeRepository.UpdateEmployee(e);
-            return Ok(SystemStatus.Success(e, "Employee updated successfully."));
+            var employee = new Employee
+            {
+                EmployeeId = dto.EmployeeId,
+                EmployeeName = dto.EmployeeName,
+                EmployeeEmail = dto.EmployeeEmail,
+                RetailOutletId = dto.RetailOutletId
+            };
+
+            _employeeRepository.UpdateEmployee(employee);
+
+            if (employee == null)
+                return Ok(SystemStatus.Fail("Employee not found."));
+
+            return Ok(SystemStatus.Success(employee, "Employee updated successfully."));
         }
 
         [HttpDelete("{id}")]
@@ -75,10 +99,12 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpGet("search/{employeeeName}")]
-        public IActionResult GetEmployeeByEmployeeeName(string employeeeName)
+        public IActionResult GetEmployeeByEmployeeeName(string employeeeEmail)
         {
-            var topEmployees = _employeeRepository.GetTopSellingEmployees();
-            return Ok(SystemStatus.Success(topEmployees, "Top selling employees retrieved."));
+            if (employeeeEmail.IsNullOrEmpty()) return Ok(SystemStatus.Fail("Employees is null."));
+
+            var employees = _employeeRepository.GetEmployeeByEmail(employeeeEmail);
+            return Ok(SystemStatus.Success(employees, "All employees retrieved."));
         }
 
 

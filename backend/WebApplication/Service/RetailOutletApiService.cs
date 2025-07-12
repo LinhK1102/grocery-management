@@ -17,8 +17,8 @@ namespace WebApplication.Services
         public async Task<List<RetailOutletDto>> GetAllAsync()
         {
             var res = await CreateClient().GetAsync(ApiRoutes.RetailOutlets.GetAll);
-            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<List<RetailOutletDto>>(res);
-            return apiResponse.Data ?? new();
+            var apiResponse = await JsonUtility.DeserializeWrappedListAsync<RetailOutletDto>(res);
+            return apiResponse;
         }
 
         public async Task<RetailOutletDto?> GetByIdAsync(int id)

@@ -21,7 +21,7 @@ using Microsoft.OData.ModelBuilder;
 using Microsoft.AspNetCore.OData;
 using Utility.Mapper;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
@@ -199,8 +199,15 @@ else
 
 using (var scope = app.Services.CreateScope())
 {
-    var categoryRepo = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
-    await categoryRepo.EnsureDefaultCategoriesAsync();
+    var provider = scope.ServiceProvider;
+
+    await provider.GetRequiredService<ICategoryRepository>().EnsureDefaultCategoriesAsync();
+    await provider.GetRequiredService<ISupplierRepository>().EnsureDefaultSupplierAsync();
+    await provider.GetRequiredService<IWarehouseRepository>().EnsureDefaultWarehouseAsync();
+    await provider.GetRequiredService<IRetailOutletRepository>().EnsureDefaultRetailOutletAsync();
+    await provider.GetRequiredService<IEmployeeRepository>().EnsureDefaultEmployeeAsync();
+    await provider.GetRequiredService<ICustomerRepository>().EnsureDefaultCustomerAsync();
+    await provider.GetRequiredService<IItemRepository>().EnsureDefaultItemAsync();
 }
 
 app.UseCors(MyAllowSpecificOrigins);

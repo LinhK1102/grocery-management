@@ -15,6 +15,7 @@ namespace DataAccess.DAO
 
         public List<RetailOutlet> GetAllRetailOutlets() => _context.RetailOutlets.ToList();
         public RetailOutlet GetRetailOutletById(int id) => _context.RetailOutlets.Find(id);
+        public RetailOutlet GetRetailOutletByName(string name) => _context.RetailOutlets.FirstOrDefault(r => r.RetailOutletName == name);
         public RetailOutlet GetRetailOutletByRetailOutletName(string retailName)
         {
             return _context.RetailOutlets.FirstOrDefault(ro => ro.RetailOutletName == retailName);

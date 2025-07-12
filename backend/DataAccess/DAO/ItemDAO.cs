@@ -24,6 +24,12 @@ namespace DataAccess.DAO
                 .Include(i => i.Product)
                 .FirstOrDefault(i => i.ItemId == itemId);
         }
+        public Item? GetItemByBatchCode(string name)
+        {
+            return _context.Items
+                .Include(i => i.Product)
+                .FirstOrDefault(i => i.BatchCode == name);
+        }
 
         public List<Item> GetItemsByProductId(int productId)
         {

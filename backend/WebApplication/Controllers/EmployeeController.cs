@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessObjects.DTOs;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Repositories.DTOs;
 using WebApplication.Models.Dto;
 using WebApplication.Services;
 
@@ -8,15 +11,22 @@ namespace WebApplication.Controllers
     public class EmployeeController : Controller
     {
         private readonly EmployeeApiService _employeeApiService;
+        private readonly RetailOutletApiService _retailOutletApiService;
 
-        public EmployeeController(EmployeeApiService employeeApiService)
+        public EmployeeController(EmployeeApiService employeeApiService, RetailOutletApiService retailOutletApiService)
         {
             _employeeApiService = employeeApiService;
+            _retailOutletApiService = retailOutletApiService;
         }
 
         public async Task<IActionResult> Index()
         {
             var employees = await _employeeApiService.GetAllAsync();
+
+            var outlets = await _retailOutletApiService.GetAllAsync();
+            // RetailOutletId -> RetailOutletName
+            ViewBag.OutletMap = outlets.ToDictionary(o => o.RetailOutletId, o => o.RetailOutletName);
+
             return View(employees);
         }
 
@@ -34,7 +44,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(EmployeeDto employee)
+        public async Task<IActionResult> Create(EmployeeRegisterRequest employee)
         {
             if (!ModelState.IsValid) return View(employee);
 
@@ -48,6 +58,9 @@ namespace WebApplication.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var employee = await _employeeApiService.GetByIdAsync(id);
+
+            await SetRetailOutletDropdown();
+
             if (employee == null) return View("NotFound");
             return View(employee);
         }
@@ -57,13 +70,29 @@ namespace WebApplication.Controllers
         public async Task<IActionResult> Edit(int id, EmployeeDto employee)
         {
             if (id != employee.EmployeeId) return NotFound();
-            if (!ModelState.IsValid) return View(employee);
+
+            if (!ModelState.IsValid)
+            {
+                await SetRetailOutletDropdown();
+                return View(employee);
+            }
 
             var success = await _employeeApiService.UpdateAsync(id, employee);
             if (success) return RedirectToAction(nameof(Index));
 
             ModelState.AddModelError("", "Unable to update employee.");
+            await SetRetailOutletDropdown();
             return View(employee);
+        }
+
+        private async Task SetRetailOutletDropdown()
+        {
+            ViewBag.RetailOutletList = (await _retailOutletApiService.GetAllAsync())
+                .Select(ro => new SelectListItem
+                {
+                    Value = ro.RetailOutletId.ToString(),
+                    Text = ro.RetailOutletName
+                }).ToList();
         }
 
         public async Task<IActionResult> Delete(int id)

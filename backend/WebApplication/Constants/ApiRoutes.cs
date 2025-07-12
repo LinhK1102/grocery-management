@@ -20,7 +20,7 @@
         {
             public const string GetAll = "/api/employees";
             public const string GetById = "/api/employees/{0}";
-            public const string Create = "/api/employees";
+            public const string Create = "/api/Employees";
             public const string Update = "/api/employees/{0}";
             public const string Delete = "/api/employees/{0}";
             public const string TopSellers = "/api/employees/top-sellers";

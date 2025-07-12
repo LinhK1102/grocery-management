@@ -15,6 +15,7 @@ namespace DataAccess.DAO
 
         public List<Supplier> GetAllSuppliers() => _context.Suppliers.ToList();
         public Supplier GetSupplierById(int id) => _context.Suppliers.Find(id);
+        public Supplier GetSupplierByName(string name) => _context.Suppliers.FirstOrDefault(s => s.SupplierName == name);
 
         public Supplier? CreateSupplier(Supplier s)
         {

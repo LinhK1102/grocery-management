@@ -13,9 +13,6 @@ namespace WebApplication.Models.Dto
         [JsonPropertyName("employeeEmail")]
         public string EmployeeEmail { get; set; }
 
-        [JsonPropertyName("employeeEmailTokenPass")]
-        public string EmployeeEmailTokenPass { get; set; }
-
         [JsonPropertyName("retailOutletId")]
         public int RetailOutletId { get; set; }
     }

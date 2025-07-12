@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Common;
 
 namespace Repositories.Repositories
 {
@@ -18,6 +19,7 @@ namespace Repositories.Repositories
         }
         public List<Item> GetAllItems() => _dao.GetAllItems();
         public Item GetItemById(string id) => _dao.GetItemById(id);
+        public Item GetItemByName(string id) => _dao.GetItemByBatchCode(id);
         public Item CreateItem(Item item)
         {
            return _dao.AddItem(item);
@@ -38,6 +40,19 @@ namespace Repositories.Repositories
         {
             return _dao.GetItemsByProductId(productId);
         }
-        
+
+        public async Task EnsureDefaultItemAsync()
+        {
+            if (GetItemByName(UtitlityConstant.Undefined) == null)
+            {
+                CreateItem(new Item
+                {
+                    BatchCode = UtitlityConstant.Undefined,
+                    Barcode = "0000000000000",
+                    Quantity = 0
+                });
+            }
+        }
+
     }
 }

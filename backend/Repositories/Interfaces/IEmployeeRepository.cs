@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Commons;
+using BusinessObjects.DTOs;
 using BusinessObjects.Entities;
 using Repositories.DTOs;
 using System;
@@ -20,6 +21,7 @@ namespace Repositories.Interfaces
         Employee UpdateEmployee(Employee e);
         bool DeleteEmployee(int id);
         List<Employee> GetTopSellingEmployees();
-        //List<Employee> GetEmployeeBySearchTerm();
+        Task<Employee?> GetEmployeeByEmail(string email);
+        Task EnsureDefaultEmployeeAsync();
     }
 }

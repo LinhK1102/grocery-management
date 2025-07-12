@@ -2,6 +2,7 @@
 using DataAccess.DAO;
 using Repositories.Interfaces;
 using System.Collections.Generic;
+using Utility.Common;
 
 namespace Repositories.Repositories
 {
@@ -17,6 +18,10 @@ namespace Repositories.Repositories
         public IEnumerable<Customer> GetAllCustomers() => _dao.GetAllCustomers();
 
         public Customer GetCustomerById(int id) => _dao.GetCustomerById(id);
+        public async Task<Customer?> GetCustomerByNameAsync(string name)
+        {
+            return await _dao.GetCustomerByNameAsync(name);
+        }
 
         public void CreateCustomer(Customer customer) => _dao.AddCustomer(customer);
 
@@ -32,5 +37,22 @@ namespace Repositories.Repositories
 
         public bool UpdateCustomerDiscountRateWithLimit(int customerId, decimal newDiscountRate, decimal maxLimit)
             => _dao.UpdateCustomerDiscountRateWithLimit(customerId, newDiscountRate, maxLimit);
+
+        public async Task EnsureDefaultCustomerAsync()
+        {
+            var existing = GetCustomerByNameAsync("Undefined");
+
+            if (existing == null)
+            {
+                var defaultCustomer = new Customer
+                {
+                    CustomerName = UtitlityConstant.Unknown
+                };
+
+                CreateCustomer(defaultCustomer); // cũng phải async
+            }
+        }
+
+
     }
 }

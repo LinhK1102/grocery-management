@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Entities;
+﻿using BusinessObjects.DTOs;
+using BusinessObjects.Entities;
 using Repositories.DTOs;
 using System;
 using System.Collections.Generic;

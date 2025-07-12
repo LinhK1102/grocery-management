@@ -8,6 +8,7 @@ using WebApplication.Constants;
 using WebApplication.Models.Dto;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
+using BusinessObjects.DTOs;
 
 namespace WebApplication.Services
 {

@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Entities;
 using DataAccess.DAO;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -23,13 +24,13 @@ namespace Repositories.Repositories
             var existingWarehouse = _dao.GetWarehouseByName(w.WarehouseName);
             if (existingWarehouse != null)
             {
-                throw new Exception($"Warehouse with name '{w.WarehouseName}' already exists.");
+                return null;
             }
 
-            // Check if the warehouse ID is 0 and the default "Undefinded" warehouse does not exist
+            // Check if the warehouse ID is 0 and the default "Undefinded" warehouse does  exist
             existingWarehouse = _dao.GetWarehouseByName(UtitlityConstant.Undefined);
             if (w.WarehouseId == 0 && existingWarehouse == null)
-            {
+            {//create undifined
                 return _dao.CreateWarehouse(new Warehouse { WarehouseName = UtitlityConstant.Undefined, WarehouseLocation = UtitlityConstant.Undefined});
             }
 
@@ -100,5 +101,24 @@ namespace Repositories.Repositories
         {
             return _dao.GetProductsInWarehouse(warehouseId);
         }
+
+        public async Task EnsureDefaultWarehouseAsync()
+        {
+            if (await GetUndefinedWarehouseIdAsync() == 0)
+            {
+                var defaultWarehouse = new Warehouse
+                {
+                    WarehouseName = "Undefined",
+                    WarehouseLocation = "N/A"
+                };
+                CreateWarehouse(defaultWarehouse);
+            }
+        }
+
+        public async Task<int> GetUndefinedWarehouseIdAsync()
+        {
+            return (_dao.GetWarehouseByName("Undefined"))?.WarehouseId ?? 0;
+        }
+
     }
 }

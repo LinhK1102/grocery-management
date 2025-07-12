@@ -38,6 +38,7 @@
 		<ProjectReference Include="..\BusinessObjects\BusinessObjects.csproj" />
 		<ProjectReference Include="..\Repositories\Repositories.csproj" />
 		<ProjectReference Include="..\Utility\Utility.csproj" />
+		<ProjectReference Include="..\WebApplication\WebApplication.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

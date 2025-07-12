@@ -28,6 +28,7 @@ namespace Repositories.Interfaces
         ProductWarehouse UpdateProductWarehouse(Product product, Warehouse warehouse, int quantity);
         bool DeleteProductWarehouse(Product product, Warehouse warehouse);
         List<Product> GetProductsInWarehouse(int warehouseId);
+        Task EnsureDefaultWarehouseAsync();
     }
 
 }

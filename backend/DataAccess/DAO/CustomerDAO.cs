@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +17,10 @@ namespace DataAccess.DAO
         public List<Customer> GetAllCustomers() => _context.Customers.ToList();
 
         public Customer GetCustomerById(int id) => _context.Customers.Find(id);
+        public async Task<Customer?> GetCustomerByNameAsync(string name)
+        {
+            return await _context.Customers.FirstOrDefaultAsync(c => c.CustomerName == name);
+        }
 
         public void AddCustomer(Customer c)
         {

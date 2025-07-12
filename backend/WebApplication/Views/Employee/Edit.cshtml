@@ -3,38 +3,39 @@
     ViewData["Title"] = "Edit Employee";
 }
 
-<h2 class="text-2xl font-bold mb-4">Edit Employee</h2>
+<div class="container mt-5">
+    <h2 class="mb-4 fw-bold">Edit Employee</h2>
 
-<form asp-action="Edit" method="post" class="space-y-4">
-    <input type="hidden" asp-for="EmployeeId" />
+    <form asp-action="Edit" asp-route-id="@Model.EmployeeId" method="post">
+        <input type="hidden" asp-for="EmployeeId" />
 
-    <div>
-        <label asp-for="EmployeeName" class="block font-medium">Name</label>
-        <input asp-for="EmployeeName" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="EmployeeName" class="text-red-500 text-sm"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="EmployeeName" class="form-label">Name</label>
+            <input asp-for="EmployeeName" class="form-control" />
+            <span asp-validation-for="EmployeeName" class="text-danger small"></span>
+        </div>
 
-    <div>
-        <label asp-for="EmployeeEmail" class="block font-medium">Email</label>
-        <input asp-for="EmployeeEmail" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="EmployeeEmail" class="text-red-500 text-sm"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="EmployeeEmail" class="form-label">Email</label>
+            <input asp-for="EmployeeEmail" class="form-control" />
+            <span asp-validation-for="EmployeeEmail" class="text-danger small"></span>
+        </div>
 
-    <div>
-        <label asp-for="EmployeeEmailTokenPass" class="block font-medium">Email Token</label>
-        <input asp-for="EmployeeEmailTokenPass" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="EmployeeEmailTokenPass" class="text-red-500 text-sm"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="RetailOutletId" class="form-label">Retail Outlet</label>
+            @Html.DropDownListFor(model => model.RetailOutletId,
+                     ViewBag.RetailOutletList as List<SelectListItem>,
+                     "-- Select Outlet --",
+                     new { @class = "form-select" })
+            <span asp-validation-for="RetailOutletId" class="text-danger small"></span>
+        </div>
 
-    <div>
-        <label asp-for="RetailOutletId" class="block font-medium">Retail Outlet ID</label>
-        <input asp-for="RetailOutletId" type="number" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="RetailOutletId" class="text-red-500 text-sm"></span>
-    </div>
-
-    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Save Changes</button>
-    <a asp-action="Index" class="ml-4 text-gray-600 hover:underline">Back to List</a>
-</form>
+        <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

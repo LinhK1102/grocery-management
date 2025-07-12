@@ -1,38 +1,43 @@
-﻿@model WebApplication.Models.Dto.EmployeeDto
+﻿@model BusinessObjects.DTOs.EmployeeRegisterRequest
 @{
     ViewData["Title"] = "Create Employee";
 }
 
-<h2 class="text-2xl font-bold mb-4">Create New Employee</h2>
-
-<form asp-action="Create" method="post" class="space-y-4">
-    <div>
-        <label asp-for="EmployeeName" class="block font-medium">Name</label>
-        <input asp-for="EmployeeName" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="EmployeeName" class="text-red-500 text-sm"></span>
+<div class="container card">
+    <div class="card-header bg-primary text-white">
+        <h4>Create New Employee</h4>
     </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post" novalidate>
+            <div class="mb-3">
+                <label asp-for="EmployeeName" class="form-label">Full Name</label>
+                <input asp-for="EmployeeName" class="form-control" />
+                <span asp-validation-for="EmployeeName" class="text-danger small"></span>
+            </div>
 
-    <div>
-        <label asp-for="EmployeeEmail" class="block font-medium">Email</label>
-        <input asp-for="EmployeeEmail" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="EmployeeEmail" class="text-red-500 text-sm"></span>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email Address</label>
+                <input asp-for="Email" class="form-control" type="email" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Back to List
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-person-plus-fill me-1"></i> Create
+                </button>
+            </div>
+        </form>
     </div>
-
-    <div>
-        <label asp-for="EmployeeEmailTokenPass" class="block font-medium">Email Token</label>
-        <input asp-for="EmployeeEmailTokenPass" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="EmployeeEmailTokenPass" class="text-red-500 text-sm"></span>
-    </div>
-
-    <div>
-        <label asp-for="RetailOutletId" class="block font-medium">Retail Outlet ID</label>
-        <input asp-for="RetailOutletId" type="number" class="form-input w-full border rounded px-3 py-2" />
-        <span asp-validation-for="RetailOutletId" class="text-red-500 text-sm"></span>
-    </div>
-
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Create</button>
-    <a asp-action="Index" class="ml-4 text-gray-600 hover:underline">Back to List</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

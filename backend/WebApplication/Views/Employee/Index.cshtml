@@ -1,35 +1,49 @@
 ﻿@model List<WebApplication.Models.Dto.EmployeeDto>
 @{
     ViewData["Title"] = "Employee List";
+    var outletMap = ViewBag.OutletMap as Dictionary<int, string>;
 }
 
-<h1 class="text-2xl font-bold mb-4">Employees</h1>
+<div class="container mt-5">
+    <h1 class="mb-4 fw-bold">Employee List</h1>
 
-<a class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block" href="@Url.Action("Create")">+ Add Employee</a>
+    <div class="mb-3 text-end">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            + Add Employee
+        </a>
+    </div>
 
-<table class="min-w-full bg-white shadow-md rounded border">
-    <thead>
-        <tr>
-            <th class="px-4 py-2">ID</th>
-            <th class="px-4 py-2">Name</th>
-            <th class="px-4 py-2">Email</th>
-            <th class="px-4 py-2">Retail Outlet</th>
-            <th class="px-4 py-2">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var emp in Model)
-        {
-            <tr class="border-t">
-                <td class="px-4 py-2">@emp.EmployeeId</td>
-                <td class="px-4 py-2">@emp.EmployeeName</td>
-                <td class="px-4 py-2">@emp.EmployeeEmail</td>
-                <td class="px-4 py-2">@emp.RetailOutletId</td>
-                <td class="px-4 py-2">
-                    <a class="text-blue-600 hover:underline" href="@Url.Action("Edit", new { id = emp.EmployeeId })">Edit</a> |
-                    <a class="text-red-600 hover:underline" href="@Url.Action("Delete", new { id = emp.EmployeeId })">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover  align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Retail Outlet</th>
+                    <th scope="col" style="width: 160px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model)
+                {
+                    <tr>
+                        <td>@emp.EmployeeId</td>
+                        <td>@emp.EmployeeName</td>
+                        <td>@emp.EmployeeEmail</td>
+                        <td>@(outletMap.ContainsKey(emp.RetailOutletId) ? outletMap[emp.RetailOutletId] : "N/A")</td>
+                        <td>
+                            <a href="@Url.Action("Edit", new { id = emp.EmployeeId })" class="btn btn-sm btn-outline-primary me-2">
+                                Edit
+                            </a>
+                            <form asp-action="DeleteConfirmed" asp-route-id="@emp.EmployeeId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to delete this employee?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

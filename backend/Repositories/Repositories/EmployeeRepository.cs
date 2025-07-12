@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Commons;
+using BusinessObjects.DTOs;
 using BusinessObjects.Entities;
 using DataAccess.DAO;
 using Repositories.DTOs;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Common;
 using Utility.Mapper;
 
 namespace Repositories.Repositories
@@ -146,6 +148,26 @@ namespace Repositories.Repositories
         {
             return await _dao.GetByNameAsync(employeeName);
         }
+
+        public async Task<Employee?> GetEmployeeByEmail(string email)
+        {
+            return await _dao.GetEmployeeByEmail(email);
+        }
+
+        public async Task EnsureDefaultEmployeeAsync()
+        {
+            if (GetEmployeeByEmployeeName(UtitlityConstant.Undefined) == null)
+            {
+                CreateEmployee(new Employee
+                {
+                    EmployeeName = UtitlityConstant.Undefined,
+                    EmployeeEmail = "unknown@employee.com",
+                    EmployeeEmailTokenPass = "N/A",
+                    RetailOutletId = _retailOutletRepo.GetRetailOutletByName(UtitlityConstant.Undefined)?.RetailOutletId ?? 0
+                });
+            }
+        }
+
 
         //public async List<Employee> GetEmployeeBySearchTerm()
         //{

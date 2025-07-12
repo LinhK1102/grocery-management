@@ -14,11 +14,11 @@ namespace BusinessObjects.Entities
         public string EmployeeEmail { get; set; }
         public string EmployeeEmailTokenPass { get; set; }
         [JsonIgnore]
-        public ICollection<Order> Orders { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
 
         public int RetailOutletId { get; set; }
         [JsonIgnore]
-        public RetailOutlet RetailOutlet { get; set; }
+        public RetailOutlet? RetailOutlet { get; set; } 
     }
 
 }

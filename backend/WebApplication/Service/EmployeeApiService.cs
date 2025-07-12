@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using BusinessObjects.DTOs;
+using Microsoft.AspNetCore.SignalR;
+using Repositories.DTOs;
 using System.Text.Json;
 using Utility.Common;
 using Utility.Hubs;
@@ -30,9 +32,13 @@ namespace WebApplication.Services
             return apiResponse.Data;
         }
 
-        public async Task<bool> CreateAsync(EmployeeDto dto)
+        public async Task<bool> CreateAsync(EmployeeRegisterRequest dto)
         {
             var res = await CreateClient().PostAsJsonAsync(ApiRoutes.Employee.Create, dto);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<EmployeeDto>(res);
+            if (!apiResponse.Success)
+                return false;
+            Console.WriteLine($"apiResponse: {apiResponse.Success}\n\rMessage:{apiResponse.Message}\n\rData:{apiResponse.Data.EmployeeId}_{apiResponse.Data.EmployeeEmail}");
             return res.IsSuccessStatusCode;
         }
 
@@ -40,6 +46,8 @@ namespace WebApplication.Services
         {
             var url = string.Format(ApiRoutes.Employee.Update, id);
             var res = await CreateClient().PutAsJsonAsync(url, dto);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<EmployeeDto>(res);
+            Console.WriteLine($"apiResponse: {apiResponse.Success}\n\rMessage:{apiResponse.Message}\n\rData:{apiResponse.Data.EmployeeId}_{apiResponse.Data.EmployeeName}_{apiResponse.Data.EmployeeEmail}");
             return res.IsSuccessStatusCode;
         }
 
@@ -47,6 +55,8 @@ namespace WebApplication.Services
         {
             var url = string.Format(ApiRoutes.Employee.Delete, id);
             var res = await CreateClient().DeleteAsync(url);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<EmployeeDto>(res);
+            Console.WriteLine($"apiResponse: {apiResponse.Success}\n\rMessage:{apiResponse.Message}\n\rData:{apiResponse.Data}");
             return res.IsSuccessStatusCode;
         }
 

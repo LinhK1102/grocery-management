@@ -15,5 +15,8 @@ namespace Repositories.Interfaces
         RetailOutlet UpdateRetailOutlet(RetailOutlet ro);
         void DeleteRetailOutlet(int id);
         List<Employee> GetEmployeesByOutlet(int outletId);
+        Task EnsureDefaultRetailOutletAsync();
+        RetailOutlet GetRetailOutletByName(string name);
+
     }
 }

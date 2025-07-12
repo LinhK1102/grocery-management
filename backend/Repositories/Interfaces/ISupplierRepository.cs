@@ -9,8 +9,10 @@ namespace Repositories.Interfaces
 {
     public interface ISupplierRepository
     {
+        Task EnsureDefaultSupplierAsync();
         List<Supplier> GetAllSuppliers();
         Supplier GetSupplierById(int id);
+        Supplier GetSupplierByName(string name);
         Supplier CreateSupplier(Supplier s);
         Supplier UpdateSupplier(Supplier s);
         void DeleteSupplier(int id);
