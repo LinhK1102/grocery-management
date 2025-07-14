@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IItemRepository
+    public interface IItemRepository : ISeedableRepository
     {
         List<Item> GetAllItems();
         Item GetItemById(string id);
@@ -16,6 +16,5 @@ namespace Repositories.Interfaces
         bool DeleteItem(string id);
         List<Item> SearchItems(string term);
         List<Item> GetItemsByProductId(int productId);
-        Task EnsureDefaultItemAsync();
     }
 }

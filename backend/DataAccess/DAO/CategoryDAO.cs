@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Common;
 
 namespace DataAccess.DAO
 {
@@ -81,13 +82,13 @@ namespace DataAccess.DAO
             if (_uncategorizedId.HasValue)
                 return _uncategorizedId.Value;
 
-            var existing = GetCategoryByName("Uncategorized");
+            var existing = GetCategoryByName(UtitlityConstant.Category_Default_Name);
             if (existing != null)
                 return (_uncategorizedId = existing.CategoryId).Value;
 
-            var created = AddCategory(new Category { CategoryName = "Uncategorized" });
+            var created = AddCategory(new Category { CategoryName = UtitlityConstant.Category_Default_Name });
             if (created == null)
-                throw new Exception("Failed to create 'Uncategorized' category.");
+                throw new Exception($"Failed to create '{UtitlityConstant.Category_Default_Name}' category.");
 
             return (_uncategorizedId = created.CategoryId).Value;
         }

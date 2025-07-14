@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IInvoiceRepository
+    public interface IInvoiceRepository : ISeedableRepository
     {
         IEnumerable<InvoiceItem> GetItemsByInvoiceId(int invoiceId);
         InvoiceItem? GetInvoiceWithDetailsAsync(int id);

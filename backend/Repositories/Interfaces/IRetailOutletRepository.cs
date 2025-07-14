@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IRetailOutletRepository
+    public interface IRetailOutletRepository : ISeedableRepository
     {
         List<RetailOutlet> GetAllRetailOutlets();
         RetailOutlet GetRetailOutletById(int id);
@@ -15,7 +15,6 @@ namespace Repositories.Interfaces
         RetailOutlet UpdateRetailOutlet(RetailOutlet ro);
         void DeleteRetailOutlet(int id);
         List<Employee> GetEmployeesByOutlet(int outletId);
-        Task EnsureDefaultRetailOutletAsync();
         RetailOutlet GetRetailOutletByName(string name);
 
     }

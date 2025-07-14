@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IEmployeeRepository
+    public interface IEmployeeRepository : ISeedableRepository
     {
         List<Employee> GetAllEmployees();
         Employee GetEmployeeById(int id);
@@ -22,6 +22,5 @@ namespace Repositories.Interfaces
         bool DeleteEmployee(int id);
         List<Employee> GetTopSellingEmployees();
         Task<Employee?> GetEmployeeByEmail(string email);
-        Task EnsureDefaultEmployeeAsync();
     }
 }

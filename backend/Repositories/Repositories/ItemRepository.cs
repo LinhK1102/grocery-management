@@ -10,13 +10,11 @@ using Utility.Common;
 
 namespace Repositories.Repositories
 {
-    public class ItemRepository : IItemRepository
+    public class ItemRepository(ItemDAO itemDAO, Lazy<IProductRepository> productRepository) : IItemRepository
     {
-        private readonly ItemDAO _dao;
-        public ItemRepository(ItemDAO itemDAO)
-        {
-            _dao = itemDAO;
-        }
+        private readonly ItemDAO _dao = itemDAO;
+        private readonly Lazy<IProductRepository> _productRepository = productRepository;
+
         public List<Item> GetAllItems() => _dao.GetAllItems();
         public Item GetItemById(string id) => _dao.GetItemById(id);
         public Item GetItemByName(string id) => _dao.GetItemByBatchCode(id);
@@ -25,7 +23,7 @@ namespace Repositories.Repositories
             if (item.ImportedDate == null)
                 item.ImportedDate = DateTime.UtcNow;
 
-           return _dao.AddItem(item);
+            return _dao.AddItem(item);
         }
         public Item UpdateItem(Item item)
         {
@@ -44,18 +42,26 @@ namespace Repositories.Repositories
             return _dao.GetItemsByProductId(productId);
         }
 
-        public async Task EnsureDefaultItemAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
-            if (GetItemByName(UtitlityConstant.Undefined) == null)
+            if ( GetItemByName(UtitlityConstant.Undefined) == null)
             {
-                CreateItem(new Item
-                {
-                    BatchCode = UtitlityConstant.Undefined,
-                    Barcode = "0000000000000",
-                    Quantity = 0
-                });
+                var product = _productRepository.Value.GetProductByName(UtitlityConstant.Product_Default_Name);
+                if ( product?.ProductId != 0)
+                  return  CreateItem(new Item
+                    {
+                      ProductId = product.ProductId,
+                        BatchCode = UtitlityConstant.Undefined,
+                        Barcode = UtitlityConstant.Product_Default_Barcode,
+                        Quantity = 0
+                    }) != null;
             }
+            return true;
         }
 
+        public Item GetItemByBatchCode(string batchCode)
+        {
+            return _dao.GetItemByBatchCode(batchCode);
+        }
     }
 }

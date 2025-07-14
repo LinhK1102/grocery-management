@@ -9,13 +9,13 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-		<PackageReference Include="Microsoft.AspNet.WebApi.OData" Version="5.7.0" />
+		<PackageReference Include="Google.Apis.Drive.v3" Version="1.70.0.3834" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
 		<PackageReference Include="Dapper" Version="2.1.66" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
 		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.17" />
-		<PackageReference Include="Microsoft.AspNetCore.OData" Version="9.3.2" />
+		<PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.10" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="9.0.6" />
@@ -29,24 +29,30 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.OData.Edm" Version="8.3.0" />
+		<PackageReference Include="Microsoft.OData.Client" Version="7.12.3" />
+		<PackageReference Include="Microsoft.OData.Core" Version="7.12.3" />
+		<PackageReference Include="Microsoft.OData.Edm" Version="7.12.3" />
+		<PackageReference Include="Microsoft.Spatial" Version="7.12.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Scrutor" Version="6.1.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.3" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\BusinessObjects\BusinessObjects.csproj" />
-		<ProjectReference Include="..\Repositories\Repositories.csproj" />
-		<ProjectReference Include="..\Utility\Utility.csproj" />
-		<ProjectReference Include="..\WebApplication\WebApplication.csproj" />
+	  <ProjectReference Include="..\BusinessObjects\BusinessObjects.csproj" />
+	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+	  <ProjectReference Include="..\Repositories\Repositories.csproj" />
+	  <ProjectReference Include="..\Utility\Utility.csproj" />
+	  <ProjectReference Include="..\WebApplication\WebApplication.csproj" />
 	</ItemGroup>
+
 
 	<ItemGroup>
 		<Content Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="grocery-465318-4fa9a5b2782c.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 

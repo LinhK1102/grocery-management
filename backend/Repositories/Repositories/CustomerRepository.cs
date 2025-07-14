@@ -10,9 +10,9 @@ namespace Repositories.Repositories
     {
         private readonly CustomerDAO _dao;
 
-        public CustomerRepository(ApplicationDbContext ctx)
+        public CustomerRepository(CustomerDAO customerDAO)
         {
-            _dao = new CustomerDAO(ctx);
+            _dao = customerDAO;
         }
 
         public IEnumerable<Customer> GetAllCustomers() => _dao.GetAllCustomers();
@@ -23,11 +23,11 @@ namespace Repositories.Repositories
             return await _dao.GetCustomerByNameAsync(name);
         }
 
-        public void CreateCustomer(Customer customer) => _dao.AddCustomer(customer);
+        public Customer CreateCustomer(Customer customer) => _dao.AddCustomer(customer);
 
-        public void UpdateCustomer(Customer customer) => _dao.UpdateCustomer(customer);
+        public Customer UpdateCustomer(Customer customer) => _dao.UpdateCustomer(customer);
 
-        public void DeleteCustomer(int id) => _dao.DeleteCustomer(id);
+        public bool DeleteCustomer(int id) => _dao.DeleteCustomer(id);
 
         public IEnumerable<Customer> SearchCustomers(string searchTerm) => _dao.SearchCustomers(searchTerm);
 
@@ -38,19 +38,23 @@ namespace Repositories.Repositories
         public bool UpdateCustomerDiscountRateWithLimit(int customerId, decimal newDiscountRate, decimal maxLimit)
             => _dao.UpdateCustomerDiscountRateWithLimit(customerId, newDiscountRate, maxLimit);
 
-        public async Task EnsureDefaultCustomerAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
-            var existing = GetCustomerByNameAsync("Undefined");
+            var existing = await GetCustomerByNameAsync(UtitlityConstant.Category_Default_Name);
 
             if (existing == null)
             {
                 var defaultCustomer = new Customer
                 {
-                    CustomerName = UtitlityConstant.Unknown
+                    CustomerName = UtitlityConstant.Customer_Default_Name,
+                    CustomerType = UtitlityConstant.Customer_Type_Unknown
                 };
 
-                CreateCustomer(defaultCustomer); // cũng phải async
+              var createdCustomer = CreateCustomer(defaultCustomer) ;
+                return  createdCustomer != null; // đã thêm dữ liệu mặc định, trả về true
             }
+
+            return true; // đã có dữ liệu, không cần thêm nữa
         }
 
 

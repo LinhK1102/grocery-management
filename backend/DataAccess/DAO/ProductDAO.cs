@@ -16,7 +16,10 @@ namespace DataAccess.DAO
             _context = context;
         }
 
-        public List<Product> GetAllProduct() => _context.Products.Include(p => p.Category).ToList();
+        public async Task<List<Product>> GetAllProductAsync()
+        {
+            return await _context.Products.ToListAsync();
+        }
 
         public Product GetProductById(int id) =>
             _context.Products
@@ -24,13 +27,19 @@ namespace DataAccess.DAO
             .Include(od => od.OrderDetails)
             .Include(i => i.Items)
             .FirstOrDefault(p => p.ProductId == id);
+          public Product GetProductByName(string productName) =>
+            _context.Products
+            .Include(c => c.Category)
+            .Include(od => od.OrderDetails)
+            .Include(i => i.Items)
+            .FirstOrDefault(p => p.ProductName == productName);
 
-        public Product? AddProduct(Product product)
+        public async Task<Product?> AddProductAsync(Product product)
         {
             try
             {
-                _context.Products.Add(product);
-                _context.SaveChanges();
+                await _context.Products.AddAsync(product);
+                await _context.SaveChangesAsync();
                 return product;
             }
             catch (Exception ex)
@@ -39,6 +48,7 @@ namespace DataAccess.DAO
                 return null;
             }
         }
+
 
         public Product UpdateProduct(ProductUpdateDto updatedProduct)
         {

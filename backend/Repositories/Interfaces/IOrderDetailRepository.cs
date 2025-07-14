@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IOrderDetailRepository
+    public interface IOrderDetailRepository : ISeedableRepository
     {
         List<OrderDetail> GetAllOrderDetails();
         OrderDetail GetOrderDetailById(int id);
         List<OrderDetail> GetOrderDetailsByOrderId(int id);
-        void CreateOrderDetail(OrderDetail od);
-        void UpdateOrderDetail(OrderDetail od);
-        void DeleteOrderDetail(int id);
+        OrderDetail CreateOrderDetail(OrderDetail od);
+        OrderDetail UpdateOrderDetail(OrderDetail od);
+        bool DeleteOrderDetail(int id);
     }
 }

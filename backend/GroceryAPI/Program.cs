@@ -20,6 +20,7 @@ using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.AspNetCore.OData;
 using Utility.Mapper;
+using Repositories.Manager;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -65,6 +66,13 @@ builder.Services.AddScoped<ItemDAO>();
 builder.Services.AddScoped<CategoryDAO>();
 builder.Services.AddScoped<GoogleDriveService>();
 builder.Services.AddScoped<GoogleAccessTokenService>();
+builder.Services.AddScoped<CustomerRepository>();
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<ItemRepository>();
+builder.Services.AddScoped<ProductRepository>(); // nếu có inject trực tiếp
+
+// --- Repositories: Seed data management ---
+builder.Services.AddScoped<SeedManager>();
 
 // --- Repositories: Business logic layer ---
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -90,8 +98,11 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 // --- Utilities: Supporting services ---
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
-//
+//HTTp client for Google Drive API
 builder.Services.AddHttpClient<IBarcodeRepository, BarcodeRepository>();
+
+// --- Hubs: Real-time communication ---
+builder.Services.AddTransient(typeof(Lazy<>), typeof(LazyResolver<>));
 
 IEdmModel GetEdmModel()
 {
@@ -161,6 +172,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
     options.Scope.Add("https://www.googleapis.com/auth/drive.metadata.readonly");
+    options.Scope.Add("https://www.googleapis.com/auth/drive.metadata");
     options.Scope.Add("https://www.googleapis.com/auth/spreadsheets");
     options.Scope.Add("https://www.googleapis.com/auth/drive.file");
 
@@ -170,8 +182,12 @@ builder.Services.AddAuthentication(options =>
     options.AuthorizationEndpoint += "?prompt=consent&access_type=offline";
 });
 
-
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddHttpClient();
+
+builder.WebHost.UseUrls("http://0.0.0.0:5100"); // mở cho tất cả IP máy
+
 var app = builder.Build();
 
 var baseDir = AppContext.BaseDirectory;
@@ -179,36 +195,30 @@ var baseDir = AppContext.BaseDirectory;
 // Từ bin\Debug\netX.X → lên tới backend\GroceryUI\dist
 var reactDistPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "GroceryUI", "dist"));
 
-if (!Directory.Exists(reactDistPath))
-{
-    Console.WriteLine("⚠️ 'dist' folder not found. Please build React app first.");
-    // Hoặc gọi npm run build tự động nếu muốn (như đã hướng dẫn trước)
-}
-else
-{
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        OnPrepareResponse = ctx =>
-        {
-            ctx.Context.Response.Headers.Append("Cache-Control", "no-cache, no-store");
-            ctx.Context.Response.Headers.Append("Pragma", "no-cache");
-            ctx.Context.Response.Headers.Append("Expires", "-1");
-        }
-    });
-}
+//if (!Directory.Exists(reactDistPath))
+//{
+//    Console.WriteLine("⚠️ 'dist' folder not found. Please build React app first.");
+//    // Hoặc gọi npm run build tự động nếu muốn (như đã hướng dẫn trước)
+//}
+//else
+//{
+//    app.UseStaticFiles(new StaticFileOptions
+//    {
+//        OnPrepareResponse = ctx =>
+//        {
+//            ctx.Context.Response.Headers.Append("Cache-Control", "no-cache, no-store");
+//            ctx.Context.Response.Headers.Append("Pragma", "no-cache");
+//            ctx.Context.Response.Headers.Append("Expires", "-1");
+//        }
+//    });
+//}
 
 using (var scope = app.Services.CreateScope())
 {
-    var provider = scope.ServiceProvider;
-
-    await provider.GetRequiredService<ICategoryRepository>().EnsureDefaultCategoriesAsync();
-    await provider.GetRequiredService<ISupplierRepository>().EnsureDefaultSupplierAsync();
-    await provider.GetRequiredService<IWarehouseRepository>().EnsureDefaultWarehouseAsync();
-    await provider.GetRequiredService<IRetailOutletRepository>().EnsureDefaultRetailOutletAsync();
-    await provider.GetRequiredService<IEmployeeRepository>().EnsureDefaultEmployeeAsync();
-    await provider.GetRequiredService<ICustomerRepository>().EnsureDefaultCustomerAsync();
-    await provider.GetRequiredService<IItemRepository>().EnsureDefaultItemAsync();
+    var seedManager = scope.ServiceProvider.GetRequiredService<SeedManager>();
+    await seedManager.SeedAllAsync();
 }
+
 
 app.UseCors(MyAllowSpecificOrigins);
 
@@ -218,14 +228,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grocery API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grocery API");
         c.RoutePrefix = "swagger";
     });
 }
 
+if (Directory.Exists(reactDistPath))
+{
+    app.UseStaticFiles();
+}
+
+
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapControllers();
+
 app.Run();

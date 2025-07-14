@@ -15,10 +15,8 @@ namespace Repositories.Repositories
         private readonly SupplierDAO _supplierDao;
         private readonly IItemRepository _itemRepository;
         private readonly IWarehouseRepository _warehouseRepository;
-        private readonly ApplicationDbContext _context;
-        public ProductRepository(ApplicationDbContext context, ProductDAO productDAO, CategoryDAO categoryDao, SupplierDAO supplierDao, IItemRepository itemRepository, IWarehouseRepository warehouseRepository)
+        public ProductRepository( ProductDAO productDAO, CategoryDAO categoryDao, SupplierDAO supplierDao, IItemRepository itemRepository, IWarehouseRepository warehouseRepository)
         {
-            _context = context;
             _productDao = productDAO;
             _categoryDao = categoryDao;
             _supplierDao = supplierDao;
@@ -26,8 +24,13 @@ namespace Repositories.Repositories
             _warehouseRepository = warehouseRepository;
         }
 
-        public List<Product> GetAllProduct() => _productDao.GetAllProduct();
+        public async Task<List<Product>> GetAllProduct()
+        {
+            return await _productDao.GetAllProductAsync();
+        }
+
         public Product GetProductById(int id) => _productDao.GetProductById(id);
+        public Product GetProductByName(string productName) => _productDao.GetProductByName(productName);
         public async Task<Product> AddProduct(Product product)
         {
             if (product == null)
@@ -49,7 +52,7 @@ namespace Repositories.Repositories
             product.Items = null;
 
             // Save product to DB to generate ProductId
-            var savedProduct =  _productDao.AddProduct(product);
+            var savedProduct = await _productDao.AddProductAsync(product);
 
             // Save items if any
             if (detachedItems.Any())
@@ -104,6 +107,27 @@ namespace Repositories.Repositories
 
         public List<Product> GetSupplierProductList(int supplierId) => _productDao.GetSupplierProductList(supplierId);
         public List<Product> GetCategoryProductList(int supplierId) => _productDao.GetCategoryProductList(supplierId);
+
+        public async Task<bool> EnsureSeedDataAsync()
+        {
+            var hasData = await _productDao.GetAllProductAsync();
+            if (!hasData.Any())
+            {
+                var product = new Product
+                {
+                    ProductName = UtitlityConstant.Product_Default_Name,
+                    CategoryId = _categoryDao.GetCategoryByName(UtitlityConstant.Category_Default_Name)?.CategoryId ?? 0,
+                    SupplierId = _supplierDao.GetSupplierByName(UtitlityConstant.Supplier_Default_Name)?.SupplierId ?? 0,
+                    BarcodeValue = UtitlityConstant.Product_Default_Barcode,
+                    UnitPrice = 10000
+                };
+
+                var added = await AddProduct(product);
+                return added != null;
+            }
+
+            return true;
+        }
 
     }
 }

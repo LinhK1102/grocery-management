@@ -6,9 +6,10 @@ using Microsoft.IdentityModel.Tokens;
 using Repositories.DTOs;
 using Repositories.Interfaces;
 using System.Threading.Tasks;
-using System.Web.Http.OData;
 using Utility.Common;
 using WebApplication.Models.Dto;
+using Microsoft.AspNetCore.OData.Query;
+
 
 namespace GroceryAPI.Controllers
 {

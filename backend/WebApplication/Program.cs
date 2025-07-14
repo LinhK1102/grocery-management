@@ -9,6 +9,13 @@ using WebApplication.Services;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5101); // đúng ✅
+});
+
+
+
 // Add services to the container
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
@@ -33,7 +40,7 @@ builder.Services.AddControllers()
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";
+        options.LoginPath = "/Account/Login"; // 👈 tự chuyển hướng nếu chưa đăng nhập
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
@@ -69,10 +76,10 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    //app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Đặt đúng thứ tự: UseRouting -> UseAuthentication/Authorization -> MapControllers
@@ -86,6 +93,13 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}");
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/Account/Login");
+    return Task.CompletedTask;
+});
+
 
 app.Run();
 

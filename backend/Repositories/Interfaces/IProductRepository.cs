@@ -4,10 +4,11 @@ using System.Collections.Generic;
 
 namespace Repositories.Interfaces
 {
-    public interface IProductRepository
+    public interface IProductRepository : ISeedableRepository
     {
-        List<Product> GetAllProduct();
+        Task<List<Product>> GetAllProduct();
         Product GetProductById(int id);
+        Product GetProductByName(string productName);
         Task<Product> AddProduct(Product product);
         Product UpdateProduct(ProductUpdateDto product);
         bool DeleteProduct(int id);

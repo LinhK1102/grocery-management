@@ -30,6 +30,7 @@ namespace Repositories.Events
             //}
 
             // Add more event types here if needed
+            await Task.CompletedTask;
         }
 
         public Task NotifyAsync(string eventName, object data)

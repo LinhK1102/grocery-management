@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface ISupplierRepository
+    public interface ISupplierRepository : ISeedableRepository
     {
-        Task EnsureDefaultSupplierAsync();
         List<Supplier> GetAllSuppliers();
         Supplier GetSupplierById(int id);
         Supplier GetSupplierByName(string name);

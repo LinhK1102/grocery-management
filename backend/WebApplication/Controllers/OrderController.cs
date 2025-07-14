@@ -61,11 +61,13 @@ namespace WebApplication.Controllers
             {
                 // Gọi service tạo hóa đơn (Invoice)
                 //await _invoiceApiService.CreateAsync(dto); // giả định bạn xử lý được
+                await Task.CompletedTask;
             }
             else
             {
                 // Gọi service tạo đơn hàng (Order)
                 //await _orderApiService.CreateAsync(dto);
+                await Task.CompletedTask;
             }
 
             //return RedirectToAction("Index", "Order");

@@ -16,12 +16,47 @@ namespace DataAccess.DAO
         public List<OrderDetail> GetOrderDetailsByOrderId(int id)
             => _context.OrderDetails.Where(od => od.OrderId == id).ToList();
         public OrderDetail GetOrderDetailById(int id) => _context.OrderDetails.Find(id);
-        public void CreateOrderDetail(OrderDetail od) { _context.OrderDetails.Add(od); _context.SaveChanges(); }
-        public void UpdateOrderDetail(OrderDetail od) { _context.OrderDetails.Update(od); _context.SaveChanges(); }
-        public void DeleteOrderDetail(int id)
+        public OrderDetail CreateOrderDetail(OrderDetail od)
         {
-            var od = _context.OrderDetails.Find(id);
-            if (od != null) { _context.OrderDetails.Remove(od); _context.SaveChanges(); }
+            try
+            {
+                _context.OrderDetails.Add(od);
+                _context.SaveChanges();
+                return od;
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi nếu cần
+                throw new Exception("Error creating OrderDetail: " + ex.Message);
+            }
+        }
+        public OrderDetail UpdateOrderDetail(OrderDetail od)
+        {
+            try
+            {
+                _context.OrderDetails.Update(od);
+                _context.SaveChanges();
+                return od;
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi nếu cần
+                throw new Exception("Error updating OrderDetail: " + ex.Message);
+            }
+        }
+        public bool DeleteOrderDetail(int id)
+        {
+            try
+            {
+                var od = _context.OrderDetails.Find(id);
+                if (od != null) { _context.OrderDetails.Remove(od); _context.SaveChanges(); return true; }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi nếu cần
+                throw new Exception("Error deleting OrderDetail: " + ex.Message);
+            }
         }
     }
 }

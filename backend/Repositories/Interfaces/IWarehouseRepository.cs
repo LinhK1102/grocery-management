@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IWarehouseRepository
+    public interface IWarehouseRepository : ISeedableRepository
     {
         // Warehouse CRUD
         List<Warehouse> GetAllWarehouses();
@@ -28,7 +28,6 @@ namespace Repositories.Interfaces
         ProductWarehouse UpdateProductWarehouse(Product product, Warehouse warehouse, int quantity);
         bool DeleteProductWarehouse(Product product, Warehouse warehouse);
         List<Product> GetProductsInWarehouse(int warehouseId);
-        Task EnsureDefaultWarehouseAsync();
     }
 
 }

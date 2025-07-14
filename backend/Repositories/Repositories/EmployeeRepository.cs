@@ -154,18 +154,25 @@ namespace Repositories.Repositories
             return await _dao.GetEmployeeByEmail(email);
         }
 
-        public async Task EnsureDefaultEmployeeAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
-            if (GetEmployeeByEmployeeName(UtitlityConstant.Undefined) == null)
+            if (await GetEmployeeByEmployeeName(UtitlityConstant.Employee_Default_Name) == null)
             {
-                CreateEmployee(new Employee
+                var outlet = _retailOutletRepo.GetRetailOutletByName(UtitlityConstant.Retail_Outlet_Default_Name);
+
+                if (outlet == null)
+                    throw new Exception("⚠️ Retail outlet 'Undefined' chưa được tạo!");
+
+                 CreateEmployee(new Employee
                 {
-                    EmployeeName = UtitlityConstant.Undefined,
-                    EmployeeEmail = "unknown@employee.com",
-                    EmployeeEmailTokenPass = "N/A",
-                    RetailOutletId = _retailOutletRepo.GetRetailOutletByName(UtitlityConstant.Undefined)?.RetailOutletId ?? 0
+                    EmployeeName = UtitlityConstant.Employee_Default_Name,
+                    EmployeeEmail = UtitlityConstant.Employee_Email,
+                    EmployeeEmailTokenPass = UtitlityConstant.N_A,
+                    RetailOutletId = outlet.RetailOutletId // ✅ Hợp lệ
                 });
             }
+
+            return true;
         }
 
 

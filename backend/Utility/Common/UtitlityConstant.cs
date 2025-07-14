@@ -11,6 +11,7 @@ namespace Utility.Common
         //data in database
         public static readonly string Undefined = "UNDEFINDED";
         public static readonly string Unknown = "UNKNOWN";
+        public static readonly string N_A = "N/A";
 
         //Item actions
         public static readonly int Item_Action_Sell = 0;
@@ -45,5 +46,63 @@ namespace Utility.Common
 
         // Optional: For project grouping/foldering
         public static readonly string Folder_Grocery_Api_Id = "1RaxF7HrdmMIk1l39E06dDLHj6EJWcqDq";
+
+        //Employee default
+        public static readonly string Employee_Default_Name = "Unknown Employee";
+        public static readonly string Employee_Email = "unknown@employee.com";
+
+        // Retail Outlet default
+        public static readonly string Retail_Outlet_Default_Name = "Unknown Retail Outlet";
+        public static readonly string Retail_Outlet_Default_Address = "Unknown Address";
+
+        // Category default
+        public static readonly string Category_Default_Name = "Uncategorized";
+        public static readonly List<string> Default_Categories = new()
+        {
+            "UNCATEGORIZED",
+            "BEVERAGES",
+            "SNACKS",
+            "DAIRY PRODUCTS",
+            "FRESH PRODUCE",
+            "BAKERY",
+            "MEAT & POULTRY",
+            "FROZEN FOODS",
+            "CANNED GOODS",
+            "GRAINS & CEREALS",
+            "SPICES & SEASONINGS"
+        };
+        // Item default
+        public static readonly string Item_Default_Name = "Unknown Item";
+        public static readonly string Item_Default_Description = "No description available";
+        public static readonly decimal Item_Default_Price = 0.0m;
+        public static readonly int Item_Default_Quantity = 0;
+
+        // Order default
+        public static readonly string Order_Default_Status = "Pending";
+        public static readonly string Order_Default_Payment_Method = "Cash";
+        public static readonly string Order_Default_Shipping_Address = "Unknown Address";
+
+        //Customer default
+        public static readonly string Customer_Default_Name = "Unknown Customer";
+        public static readonly string Customer_Type_Unknown = "Unknown";
+        public static readonly string Customer_Type_Identified = "Identified";
+
+        //Product default
+        public static readonly string Product_Default_Name = "Unknown Product";
+        public static readonly string Product_Default_Barcode = "0000000000000";
+
+        //Supplier default
+        public static readonly string Supplier_Default_Name = "Unknown Supplier";
+        public static readonly string Supplier_Default_Address = "Unknown Address";
+        public static readonly string Supplier_Default_Email = "suplier.123@gmail.com";
+        public static readonly string Supplier_Default_Phone = "0000000000";
+        // Warehouse default
+        public static readonly string Warehouse_Default_Name = "Unknown Warehouse";
+        public static readonly string Warehouse_Default_Location = "Unknown Location";
+        // ProductWarehouse default
+
+        //Invoice
+        public static readonly string Invoice_File_Path = "invoices/test_invoice.pdf";
+
     }
 }

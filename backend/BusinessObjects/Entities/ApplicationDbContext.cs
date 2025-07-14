@@ -88,6 +88,33 @@ namespace BusinessObjects.Entities
                 .HasOne(pw => pw.Warehouse)
                 .WithMany(w => w.ProductWarehouses)
                 .HasForeignKey(pw => pw.WarehouseId);
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.UnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<InvoiceItem>()
+                .Property(i => i.UnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<InvoiceItem>()
+                .HasOne(ii => ii.Product)
+                .WithMany()
+                .HasForeignKey(ii => ii.ProductId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<Customer>()
+                .Property(c => c.DiscountRate)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<OrderDetail>()
+                .Property(o => o.UnitPriceAtTimeOfSale)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderDetail>()
+                .Property(o => o.DiscountApplied)
+                .HasPrecision(5, 2);
+
         }
     }
 }

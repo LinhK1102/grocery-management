@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    public interface IOrderRepository
+    public interface IOrderRepository : ISeedableRepository
     {
         List<Order> GetAllOrders();
         Order GetOrderById(int id);

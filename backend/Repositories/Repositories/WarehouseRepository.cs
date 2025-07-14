@@ -15,7 +15,7 @@ namespace Repositories.Repositories
     public class WarehouseRepository : IWarehouseRepository
     {
         private readonly WarehouseDAO _dao;
-        public WarehouseRepository(ApplicationDbContext ctx) => _dao = new WarehouseDAO(ctx);
+        public WarehouseRepository(WarehouseDAO warehouseDAO) => _dao = warehouseDAO;
 
         public List<Warehouse> GetAllWarehouses() => _dao.GetAllWarehouses();
         public Warehouse GetWarehouseById(int id) => _dao.GetWarehouseById(id);
@@ -102,22 +102,23 @@ namespace Repositories.Repositories
             return _dao.GetProductsInWarehouse(warehouseId);
         }
 
-        public async Task EnsureDefaultWarehouseAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
             if (await GetUndefinedWarehouseIdAsync() == 0)
             {
                 var defaultWarehouse = new Warehouse
                 {
-                    WarehouseName = "Undefined",
-                    WarehouseLocation = "N/A"
+                    WarehouseName = UtitlityConstant.Warehouse_Default_Name,
+                    WarehouseLocation = UtitlityConstant.Warehouse_Default_Location
                 };
-                CreateWarehouse(defaultWarehouse);
+                return CreateWarehouse(defaultWarehouse) != null;
             }
+            return true;
         }
 
         public async Task<int> GetUndefinedWarehouseIdAsync()
         {
-            return (_dao.GetWarehouseByName("Undefined"))?.WarehouseId ?? 0;
+            return (_dao.GetWarehouseByName(UtitlityConstant.Warehouse_Default_Name))?.WarehouseId ?? 0;
         }
 
     }

@@ -2,9 +2,8 @@
 
 namespace Repositories.Interfaces
 {
-    public interface ICategoryRepository
+    public interface ICategoryRepository : ISeedableRepository
     {
-        Task<bool> EnsureDefaultCategoriesAsync();
         List<Category> GetAll();
         Category? GetById(int id);
         Category GetOrCreateByName(string name);

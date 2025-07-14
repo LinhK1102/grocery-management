@@ -34,7 +34,7 @@ namespace GroceryAPI.Controllers
             if (string.IsNullOrEmpty(spreadsheetId))
                 return StatusCode(500, SystemStatus.Fail("Failed to create spreadsheet."));
 
-            var products = _productRepo.GetAllProduct();
+            var products = await _productRepo.GetAllProduct();
             if (!products.Any())
                 return NotFound(SystemStatus.Fail("No product data found"));
 

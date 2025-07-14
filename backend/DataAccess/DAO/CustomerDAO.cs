@@ -22,26 +22,30 @@ namespace DataAccess.DAO
             return await _context.Customers.FirstOrDefaultAsync(c => c.CustomerName == name);
         }
 
-        public void AddCustomer(Customer c)
+        public Customer AddCustomer(Customer c)
         {
             _context.Customers.Add(c);
             _context.SaveChanges();
+            return c;
         }
 
-        public void UpdateCustomer(Customer c)
+        public Customer UpdateCustomer(Customer c)
         {
             _context.Customers.Update(c);
             _context.SaveChanges();
+            return c;
         }
 
-        public void DeleteCustomer(int id)
+        public bool DeleteCustomer(int id)
         {
             var c = _context.Customers.Find(id);
             if (c != null)
             {
                 _context.Customers.Remove(c);
                 _context.SaveChanges();
+                return true;
             }
+            return false;
         }
 
         public IEnumerable<Customer> SearchCustomers(string searchTerm)

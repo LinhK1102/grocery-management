@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using GroceryAPI.Hubs;
 using BusinessObjects.DTOs;
+using Microsoft.EntityFrameworkCore;
+using WebApplication.Models.Dto;
 namespace GroceryAPI.Controllers
 {
     [Route("api/products")]
@@ -27,6 +29,11 @@ namespace GroceryAPI.Controllers
         public IActionResult GetAllProduct()
         {
             var products = _repo.GetAllProduct();
+            List<ProductDto> productDtos = new List<ProductDto>();
+            //for (var product in products)
+            //{
+
+            //}
             return Ok(SystemStatus.Success(products, "All products retrieved."));
         }
 
@@ -131,6 +138,12 @@ namespace GroceryAPI.Controllers
         [HttpPost("items-create")]
         public IActionResult CreateItems([FromBody] Item item)
         {
+            var productExists = _repo.GetProductById(item.ProductId);
+            if (productExists == null)
+            {
+                return BadRequest("Product not exist!");
+            }
+
             _itemRepo.CreateItem(item);
             return CreatedAtAction(nameof(GetProductById), new { id = item.ProductId },
                 SystemStatus.Success(item, "Items created successfully."));

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Common;
 
 namespace Repositories.Repositories
 {
@@ -45,39 +46,16 @@ namespace Repositories.Repositories
             return updated == null ? null : updated;
         }
 
-        private static readonly List<string> _defaultCategories = new()
-            {
-                "UNCATEGORIZED",
-                "BEVERAGES",
-                "SNACKS",
-                "DAIRY PRODUCTS",
-                "FRESH PRODUCE",
-                "BAKERY",
-                "MEAT & POULTRY",
-                "FROZEN FOODS",
-                "CANNED GOODS",
-                "GRAINS & CEREALS",
-                "SPICES & SEASONINGS",
-                "CONDIMENTS & SAUCES",
-                "CLEANING SUPPLIES",
-                "PERSONAL CARE",
-                "HOUSEHOLD ITEMS",
-                "BABY PRODUCTS",
-                "PET SUPPLIES",
-                "HEALTH & WELLNESS",
-                "INSTANT NOODLES",
-                "ALCOHOLIC BEVERAGES"
-            };
 
-        public async Task<bool> EnsureDefaultCategoriesAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
             bool check = false;
-            foreach (var name in _defaultCategories)
+            foreach (var name in UtitlityConstant.Default_Categories)
             {
-                var exists =  _categoryDAO.GetCategoryByName(name.ToUpper());
+                var exists =   _categoryDAO.GetCategoryByName(name.ToUpper());
                 if (exists == null)
                 {
-                    _categoryDAO.AddCategory(new Category { CategoryName = name});
+                     _categoryDAO.AddCategory(new Category { CategoryName = name});
                     check = true;
                 }
             }

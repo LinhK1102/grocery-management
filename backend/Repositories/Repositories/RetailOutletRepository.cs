@@ -14,7 +14,7 @@ namespace Repositories.Repositories
     public class RetailOutletRepository : IRetailOutletRepository
     {
         private readonly RetailOutletDAO _dao;
-        public RetailOutletRepository(ApplicationDbContext ctx) => _dao = new RetailOutletDAO(ctx);
+        public RetailOutletRepository(RetailOutletDAO retailOutletDAO) => _dao = retailOutletDAO;
 
         public List<RetailOutlet> GetAllRetailOutlets() => _dao.GetAllRetailOutlets();
         public RetailOutlet GetRetailOutletById(int id) => _dao.GetRetailOutletById(id);
@@ -68,24 +68,24 @@ namespace Repositories.Repositories
             return newUnassigned;
         }
 
-        public async Task EnsureDefaultRetailOutletAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
             if (await GetUndefinedRetailOutletIdAsync() == 0)
             {
                 var defaultOutlet = new RetailOutlet
                 {
-                    RetailOutletName = UtitlityConstant.Undefined,
-                    RetailOutletLocation = "N/A",
+                    RetailOutletName = UtitlityConstant.Retail_Outlet_Default_Name,
+                    RetailOutletLocation = UtitlityConstant.Retail_Outlet_Default_Address
                 };
-                _dao.CreateRetailOutlet(defaultOutlet);
+                return _dao.CreateRetailOutlet(defaultOutlet) != null;
             }
+            return true; // đã có dữ liệu, không cần thêm nữa
         }
 
         public async Task<int> GetUndefinedRetailOutletIdAsync()
         {
-            return (_dao.GetRetailOutletByName("Undefined"))?.RetailOutletId ?? 0;
+            return (_dao.GetRetailOutletByName(UtitlityConstant.Retail_Outlet_Default_Name))?.RetailOutletId ?? 0;
         }
-
 
     }
 

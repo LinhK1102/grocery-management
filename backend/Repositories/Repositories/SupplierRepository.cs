@@ -14,7 +14,7 @@ namespace Repositories.Repositories
     public class SupplierRepository : ISupplierRepository
     {
         private readonly SupplierDAO _dao;
-        public SupplierRepository(ApplicationDbContext ctx) => _dao = new SupplierDAO(ctx);
+        public SupplierRepository(SupplierDAO supplierDAO) => _dao = supplierDAO;
 
         public List<Supplier> GetAllSuppliers() => _dao.GetAllSuppliers();
         public Supplier GetSupplierById(int id) => _dao.GetSupplierById(id);
@@ -49,24 +49,24 @@ namespace Repositories.Repositories
             return _dao.DeleteSupplierWithDependencyCheck(supplierId);
         }
 
-        public async Task EnsureDefaultSupplierAsync()
+        public async Task<bool> EnsureSeedDataAsync()
         {
             if (await GetUndefinedSupplierIdAsync() == 0)
             {
                 var defaultSupplier = new Supplier
                 {
-                    SupplierName = "Undefined",
-                    SupplierEmail = "unknown@supplier.com",
-                    SupplierPhoneNumber = "0000000000"
+                    SupplierName = UtitlityConstant.Supplier_Default_Name,
+                    SupplierEmail = UtitlityConstant.Supplier_Default_Email,
+                    SupplierPhoneNumber = UtitlityConstant.Supplier_Default_Phone,
                 };
-                CreateSupplier(defaultSupplier);
+               return CreateSupplier(defaultSupplier) !=null;
             }
+            return true;
         }
 
         public async Task<int> GetUndefinedSupplierIdAsync()
         {
-            return (GetSupplierByName("Undefined"))?.SupplierId ?? 0;
+            return (GetSupplierByName(UtitlityConstant.Supplier_Default_Name))?.SupplierId ?? 0;
         }
-
     }
 }
