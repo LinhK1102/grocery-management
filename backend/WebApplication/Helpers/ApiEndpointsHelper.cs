@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System.Net.Http;
 using System.Security.Claims;
-using WebApplication.Constants;
-using WebApplication.Models.Dto;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Models.Dto;
 
-namespace WebApplication.Helpers
+namespace GroceryWebApp.Helpers
 {
     public static class ApiEndpointsHelper
     {

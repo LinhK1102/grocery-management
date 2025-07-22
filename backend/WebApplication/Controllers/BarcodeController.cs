@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     [Route("[controller]")]
     public class BarcodeController : Controller

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication.Services;
-using WebApplication.Models.Dto;
-using WebApplication.Service;
-using WebApplication.Helpers;
+using GroceryWebApp.Services;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Service;
+using GroceryWebApp.Helpers;
 
-namespace WebApplication.Controllers;
+namespace GroceryWebApp.Controllers;
 public class CategoryController : Controller
 {
     private readonly CategoryApiService _categoryApiService;

@@ -3,22 +3,61 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
-using WebApplication.Service;
-using WebApplication.Services;
+using GroceryWebApp.Service;
+using GroceryWebApp.Services;
 
-var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
+//  Kestrel allow connect from other devices (Wifi,LAN)
+// ✅ Cho phép mọi thiết bị truy cập qua cổng 5101 (LAN + localhost)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.ListenAnyIP(5101); // đúng ✅
+    serverOptions.ListenAnyIP(5101); // Bao gồm cả 127.0.0.1 và mạng LAN
 });
 
-
+// Log IP
+var host = Dns.GetHostEntry(Dns.GetHostName());
+var localIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.ToString();
+Console.WriteLine($"✅ Login app via: http://{localIp}:5101 OR http://localhost:5101");
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+// Get IP LAN (IPv4)
+var lanIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?.ToString();
+var apiBase = $"http://{lanIp}:5100/"; // ✅ Sử dụng IP thật
+builder.Configuration["ApiBaseUrl"] = apiBase; // ✅ Optional: ghi đè để dùng ở chỗ khác
+Console.WriteLine($"✅ API base address: {apiBase}");
+
+// Đăng ký HttpClient dùng IP động
+builder.Services.AddHttpClient("API", client =>
+{
+    client.BaseAddress = new Uri(apiBase);
+});
+
+
+
+builder.Services.AddHttpContextAccessor();
+
+// Cookie Authentication cho WebApp
+// ✅ Chỉ giữ 1 lần đăng ký Cookie Auth
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";              // hoặc "/login"
+        options.LogoutPath = "/Account/Logout";            // hoặc "/logout"
+        options.AccessDeniedPath = "/Account/AccessDenied"; // hoặc "/access-denied"
+    });
+
+
+builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
+{
+    options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
+});
+
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
     {
@@ -35,23 +74,6 @@ builder.Services.AddControllers()
         };
     });
 
-
-// Cookie Authentication cho WebApp
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login"; // 👈 tự chuyển hướng nếu chưa đăng nhập
-        options.AccessDeniedPath = "/Account/AccessDenied";
-    });
-
-builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
-{
-    options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
-});
-
-// Gọi API + lấy context
-builder.Services.AddHttpClient();
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ApiClientService>();
 builder.Services.AddScoped<AuthApiService>();
@@ -75,7 +97,7 @@ var app = builder.Build();
 // Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     //app.UseHsts();
 }
 
@@ -96,7 +118,7 @@ app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.MapGet("/", context =>
 {
-    context.Response.Redirect("/Account/Login");
+    context.Response.Redirect("/login");
     return Task.CompletedTask;
 });
 

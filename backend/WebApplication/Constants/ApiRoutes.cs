@@ -1,4 +1,4 @@
-﻿namespace WebApplication.Constants
+﻿namespace GroceryWebApp.Constants
 {
     public static class ApiRoutes
     {

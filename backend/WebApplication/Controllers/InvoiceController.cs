@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication.Service;
+using GroceryWebApp.Service;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     public class InvoiceController : Controller
     {

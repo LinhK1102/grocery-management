@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication.Services;
-using WebApplication.Models.Dto;
-using WebApplication.Service;
+using GroceryWebApp.Services;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Service;
 using System.Text.Json;
-using WebApplication.Helpers;
-using static WebApplication.Constants.SystemMessages;
+using GroceryWebApp.Helpers;
+using static GroceryWebApp.Constants.SystemMessages;
 
-namespace WebApplication.Controllers;
+namespace GroceryWebApp.Controllers;
 public class ProductController : Controller
 {
     private readonly ProductApiService _productApiService;

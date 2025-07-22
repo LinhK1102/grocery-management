@@ -1,6 +1,6 @@
-﻿using WebApplication.Models.Dto;
+﻿using GroceryWebApp.Models.Dto;
 
-namespace WebApplication.Helpers
+namespace GroceryWebApp.Helpers
 {
     public static class DtoExtensions
     {

@@ -1,12 +1,12 @@
 ﻿using Utility.Common;
-using WebApplication.Constants;
-using WebApplication.Models.Dto;
-using WebApplication.Service;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Service;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
 
-namespace WebApplication.Services
+namespace GroceryWebApp.Services
 {
     public class ProductApiService : ApiClientService
     {
@@ -22,6 +22,18 @@ namespace WebApplication.Services
             var products = await JsonUtility.DeserializeWrappedListAsync<ProductDto>(res);
             return products;
         }
+
+        public async Task<(List<ProductDto> Products, int Total)> GetAllAsync(string search = "", int page = 1, int pageSize = 10)
+        {
+            var client = CreateClient();
+            var query = $"?search={search}&page={page}&pageSize={pageSize}";
+            var res = await client.GetAsync(ApiRoutes.Product.GetAll + query);
+
+            var result = await JsonUtility.DeserializeApiResponseAsync<ProductListResponse>(res);
+
+            return (result.Data.Products.Values, result.Data.Total);
+        }
+
 
         public async Task<ProductDto?> GetByIdAsync(int id)
         {

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebApplication.Views.Account
+namespace GroceryWebApp.Views.Account
 {
     public class LoginModel : PageModel
     {

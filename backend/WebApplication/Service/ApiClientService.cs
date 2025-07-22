@@ -4,9 +4,9 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
-using WebApplication.Models;
+using GroceryWebApp.Models;
 
-namespace WebApplication.Service
+namespace GroceryWebApp.Service
 {
     public class ApiClientService
     {

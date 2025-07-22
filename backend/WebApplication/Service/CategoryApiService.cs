@@ -3,11 +3,11 @@ using BusinessObjects.Entities;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Common;
 using Utility.Hubs;
-using WebApplication.Constants;
-using WebApplication.Models;
-using WebApplication.Models.Dto;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Models;
+using GroceryWebApp.Models.Dto;
 
-namespace WebApplication.Service
+namespace GroceryWebApp.Service
 {
     public class CategoryApiService : ApiClientService
     {

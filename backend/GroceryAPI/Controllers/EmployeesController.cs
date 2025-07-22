@@ -7,7 +7,7 @@ using Repositories.DTOs;
 using Repositories.Interfaces;
 using System.Threading.Tasks;
 using Utility.Common;
-using WebApplication.Models.Dto;
+using GroceryWebApp.Models.Dto;
 using Microsoft.AspNetCore.OData.Query;
 
 

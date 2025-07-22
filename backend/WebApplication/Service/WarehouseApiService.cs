@@ -1,15 +1,15 @@
 ﻿using System.Text.Json;
-using WebApplication.Models;
+using GroceryWebApp.Models;
 using Microsoft.AspNetCore.Http;
-using WebApplication.Service;
+using GroceryWebApp.Service;
 using Utility.Common;
-using WebApplication.Constants;
-using WebApplication.Helpers;
-using WebApplication.Models.Dto;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Helpers;
+using GroceryWebApp.Models.Dto;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
 
-namespace WebApplication.Services
+namespace GroceryWebApp.Services
 {
     public class WarehouseApiService : ApiClientService
     {

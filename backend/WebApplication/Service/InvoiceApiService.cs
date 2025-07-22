@@ -1,7 +1,7 @@
-﻿using WebApplication.Constants;
-using WebApplication.Models.Dto;
+﻿using GroceryWebApp.Constants;
+using GroceryWebApp.Models.Dto;
 
-namespace WebApplication.Service
+namespace GroceryWebApp.Service
 {
     public class InvoiceApiService
     {

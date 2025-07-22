@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication.Models.Dto;
-using WebApplication.Services;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Services;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     public class WarehouseController : Controller
     {

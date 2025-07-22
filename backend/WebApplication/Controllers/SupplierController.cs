@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
-using WebApplication.Helpers;
-using WebApplication.Models.Dto;
-using WebApplication.Services;
+using GroceryWebApp.Helpers;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Services;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     public class SupplierController : Controller
     {

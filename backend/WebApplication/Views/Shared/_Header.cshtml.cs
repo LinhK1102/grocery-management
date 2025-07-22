@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebApplication.Views.Shared
+namespace GroceryWebApp.Views.Shared
 {
     public class _HeaderModel : PageModel
     {

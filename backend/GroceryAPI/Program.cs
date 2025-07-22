@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using PdfSharpCore.Drawing.BarCodes;
-using System;
 using Repositories.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -21,10 +20,13 @@ using Microsoft.OData.ModelBuilder;
 using Microsoft.AspNetCore.OData;
 using Utility.Mapper;
 using Repositories.Manager;
+using GroceryWebApp.Models.Dto;
+using System.Net;
 
-var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
+
+// CORS policy for allowing all (only for dev/test; not for production)
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
@@ -36,22 +38,18 @@ builder.Services.AddCors(options =>
         });
 });
 
-
-
-
-// Thêm dịch vụ DbContext
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add EF Core with SQL Server + optimized split query
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
     x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
+// Bind strongly typed config
 builder.Services.Configure<ApiSettings>(builder.Configuration);
 
-//auto mapping
+// Register AutoMapper with mapping profile
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// --- DAOs: Direct database access ---
+// Register DAO classes
 builder.Services.AddScoped<CustomerDAO>();
 builder.Services.AddScoped<EmployeeDAO>();
 builder.Services.AddScoped<OrderDAO>();
@@ -61,20 +59,17 @@ builder.Services.AddScoped<RetailOutletDAO>();
 builder.Services.AddScoped<SupplierDAO>();
 builder.Services.AddScoped<WarehouseDAO>();
 builder.Services.AddScoped<CategoryDAO>();
-builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<ItemDAO>();
-builder.Services.AddScoped<CategoryDAO>();
+builder.Services.AddScoped<InvoiceDAO>();
+
+// Register manager/services
+builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<GoogleDriveService>();
 builder.Services.AddScoped<GoogleAccessTokenService>();
-builder.Services.AddScoped<CustomerRepository>();
-builder.Services.AddScoped<OrderRepository>();
-builder.Services.AddScoped<ItemRepository>();
-builder.Services.AddScoped<ProductRepository>(); // nếu có inject trực tiếp
-
-// --- Repositories: Seed data management ---
 builder.Services.AddScoped<SeedManager>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
-// --- Repositories: Business logic layer ---
+// Register Repositories
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
@@ -86,31 +81,29 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IBarcodeRepository, BarcodeRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IGoogleSheetsService, GoogleSheetsService>();
 
-builder.Services.AddScoped<InvoiceDAO>();
-builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-
-
-// --- Repositories: Event handling ---
-builder.Services.AddScoped<INotificationService, NotificationService>();
-
-// --- Utilities: Supporting services ---
-builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-
-//HTTp client for Google Drive API
+// Register HttpClient for barcode repository + general fallback
 builder.Services.AddHttpClient<IBarcodeRepository, BarcodeRepository>();
 
-// --- Hubs: Real-time communication ---
+builder.Services.AddHttpClient();
+
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+// Dependency injection for lazy loading (e.g., SignalR hub)
 builder.Services.AddTransient(typeof(Lazy<>), typeof(LazyResolver<>));
 
+// Define OData EDM model
 IEdmModel GetEdmModel()
 {
-    var builder = new ODataConventionModelBuilder();
-    builder.EntitySet<Employee>("Employees");
-    return builder.GetEdmModel();
+    var modelBuilder = new ODataConventionModelBuilder();
+    modelBuilder.EntitySet<Employee>("Employees");
+    modelBuilder.EntitySet<Product>("Products");
+    return modelBuilder.GetEdmModel();
 }
 
+// Add MVC Controllers + OData + JSON loop handling
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -123,11 +116,11 @@ builder.Services.AddControllers()
             .AddRouteComponents("odata", GetEdmModel());
     });
 
-
+// Add SignalR support
 builder.Services.AddSignalR();
 
+// Swagger documentation
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -141,8 +134,33 @@ builder.Services.AddSwaggerGen(options =>
             Email = "trankhanhlinh2201004@gmail.com"
         }
     });
+
+    // JWT bearer definition
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Input: Bearer {your token here}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
+// JWT authentication config
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -159,6 +177,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Google OAuth 2.0 authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -170,59 +189,50 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-
     options.Scope.Add("https://www.googleapis.com/auth/drive.metadata.readonly");
     options.Scope.Add("https://www.googleapis.com/auth/drive.metadata");
     options.Scope.Add("https://www.googleapis.com/auth/spreadsheets");
     options.Scope.Add("https://www.googleapis.com/auth/drive.file");
-
     options.SaveTokens = true;
-
-    // Thêm dòng sau để buộc Google hỏi lại quyền (rất quan trọng nếu user đã từng đăng nhập)
     options.AuthorizationEndpoint += "?prompt=consent&access_type=offline";
 });
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddHttpClient();
+// Start server on 0.0.0.0:5100 to accept external IP access
+builder.WebHost.UseUrls("http://0.0.0.0:5100");
 
-builder.WebHost.UseUrls("http://0.0.0.0:5100"); // mở cho tất cả IP máy
+// Print dynamic IP address
+var host = Dns.GetHostEntry(Dns.GetHostName());
+var localIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.ToString();
+Console.WriteLine($"Access your app at http://{localIp}:5100/swagger/index.html");
 
 var app = builder.Build();
 
+// Static file setup for frontend React (dist folder)
 var baseDir = AppContext.BaseDirectory;
-
-// Từ bin\Debug\netX.X → lên tới backend\GroceryUI\dist
 var reactDistPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "GroceryUI", "dist"));
+if (Directory.Exists(reactDistPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "no-cache, no-store");
+            ctx.Context.Response.Headers.Append("Pragma", "no-cache");
+            ctx.Context.Response.Headers.Append("Expires", "-1");
+        }
+    });
+}
 
-//if (!Directory.Exists(reactDistPath))
-//{
-//    Console.WriteLine("⚠️ 'dist' folder not found. Please build React app first.");
-//    // Hoặc gọi npm run build tự động nếu muốn (như đã hướng dẫn trước)
-//}
-//else
-//{
-//    app.UseStaticFiles(new StaticFileOptions
-//    {
-//        OnPrepareResponse = ctx =>
-//        {
-//            ctx.Context.Response.Headers.Append("Cache-Control", "no-cache, no-store");
-//            ctx.Context.Response.Headers.Append("Pragma", "no-cache");
-//            ctx.Context.Response.Headers.Append("Expires", "-1");
-//        }
-//    });
-//}
-
+// Auto seed database
 using (var scope = app.Services.CreateScope())
 {
     var seedManager = scope.ServiceProvider.GetRequiredService<SeedManager>();
     await seedManager.SeedAllAsync();
 }
 
-
-app.UseCors(MyAllowSpecificOrigins);
-
-// Sử dụng Swagger để test API
+// Enable Swagger only in Development mode
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -233,18 +243,24 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-if (Directory.Exists(reactDistPath))
-{
-    app.UseStaticFiles();
-}
+// Enable HTTPS redirect
+//app.UseHttpsRedirection();
 
+// CORS middleware must be early in pipeline
+app.UseCors(MyAllowSpecificOrigins);
 
-app.UseHttpsRedirection();
-
+// Enable authentication/authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Setup SignalR Notification Hub
 app.MapHub<NotificationHub>("/notificationHub");
+
+// Setup controllers
 app.MapControllers();
 
+// Redirect root URL to Swagger page
+app.MapGet("/", () => Results.Redirect("/swagger"));
+
+// Start application
 app.Run();

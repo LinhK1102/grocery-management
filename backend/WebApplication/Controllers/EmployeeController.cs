@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Repositories.DTOs;
-using WebApplication.Models.Dto;
-using WebApplication.Services;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Services;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     public class EmployeeController : Controller
     {

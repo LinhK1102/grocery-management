@@ -1,4 +1,4 @@
-﻿namespace WebApplication.Models.Account
+﻿namespace GroceryWebApp.Models.Account
 
 {
     public class LoginResponse

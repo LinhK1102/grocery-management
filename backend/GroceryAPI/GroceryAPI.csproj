@@ -43,7 +43,7 @@
 	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
 	  <ProjectReference Include="..\Repositories\Repositories.csproj" />
 	  <ProjectReference Include="..\Utility\Utility.csproj" />
-	  <ProjectReference Include="..\WebApplication\WebApplication.csproj" />
+	  <ProjectReference Include="..\WebApplication\GroceryWebApp.csproj" />
 	</ItemGroup>
 
 

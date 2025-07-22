@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using WebApplication.Models;
+using GroceryWebApp.Models;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     [Route("[controller]")]
     public class HomeController : Controller

@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryAPI", "GroceryAPI\Gr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{6DE3F696-CEBB-46EB-80E8-C7E543791F11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication", "WebApplication\WebApplication.csproj", "{5EC0BD9F-8992-4C1C-AB8B-6CDB6208294E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryWebApp", "WebApplication\GroceryWebApp.csproj", "{5EC0BD9F-8992-4C1C-AB8B-6CDB6208294E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

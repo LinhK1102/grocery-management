@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebApplication.Views.Order
+namespace GroceryWebApp.Views.Order
 {
     public class CreateModel : PageModel
     {

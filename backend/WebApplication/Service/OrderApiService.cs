@@ -2,12 +2,12 @@
 using System.Net.Http.Json;
 using Utility.Common;
 using Utility.Hubs;
-using WebApplication.Constants;
-using WebApplication.Models;
-using WebApplication.Models.Dto;
-using WebApplication.Service;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Models;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Service;
 
-namespace WebApplication.Services
+namespace GroceryWebApp.Services
 {
     public class OrderApiService : ApiClientService
     {

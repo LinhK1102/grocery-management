@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)] // ✅ Ẩn controller này khỏi Swagger
     public class ErrorController : Controller

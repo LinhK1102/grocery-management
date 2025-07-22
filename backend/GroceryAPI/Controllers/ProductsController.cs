@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.SignalR;
 using GroceryAPI.Hubs;
 using BusinessObjects.DTOs;
 using Microsoft.EntityFrameworkCore;
-using WebApplication.Models.Dto;
+using GroceryWebApp.Models.Dto;
+using System.Threading.Tasks;
+using ProductUpdateDto = GroceryWebApp.Models.Dto.ProductUpdateDto;
+using Microsoft.AspNetCore.Authorization;
 namespace GroceryAPI.Controllers
 {
     [Route("api/products")]

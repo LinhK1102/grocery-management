@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace WebApplication.Models.Dto
+namespace GroceryWebApp.Models.Dto
 {
     public class SupplierDto
     {

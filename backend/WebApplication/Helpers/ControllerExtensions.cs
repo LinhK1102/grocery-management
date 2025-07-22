@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using static WebApplication.Constants.SystemMessages;
+using static GroceryWebApp.Constants.SystemMessages;
 
-namespace WebApplication.Helpers
+namespace GroceryWebApp.Helpers
 {
     public static class ControllerExtensions
     {

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Utility.Common;
 
-namespace WebApplication.Models.Dto
+namespace GroceryWebApp.Models.Dto
 {
     public class ProductDto
     {
@@ -33,10 +33,12 @@ namespace WebApplication.Models.Dto
         public DateTime ExpiryDuration { get; set; }
 
         [JsonPropertyName("items")]
+        [JsonIgnore]
         [JsonConverter(typeof(ValuesWrapperConverter<ItemDto>))]
         public ICollection<ItemDto> Items { get; set; } = new List<ItemDto>();
 
         [JsonPropertyName("orderDetails")]
+        [JsonIgnore]
         [JsonConverter(typeof(ValuesWrapperConverter<OrderDetailDto>))]
         public ICollection<OrderDetailDto> OrderDetails { get; set; } = new List<OrderDetailDto>();
 
@@ -45,9 +47,7 @@ namespace WebApplication.Models.Dto
 
         [JsonIgnore]
         public SupplierDto Supplier { get; set; }
-         [JsonIgnore]
-        public ItemDto Item { get; set; }
-         [JsonIgnore]
+        [JsonIgnore]
         public OrderDetailDto OrderDetail { get; set; }
 
         [JsonIgnore]

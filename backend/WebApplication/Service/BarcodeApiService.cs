@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
-using WebApplication.Models;
+using GroceryWebApp.Models;
 using Microsoft.AspNetCore.Http;
-using WebApplication.Service;
-using WebApplication.Constants;
-using WebApplication.Helpers;
-using ProductDto = WebApplication.Models.Dto.ProductDto;
+using GroceryWebApp.Service;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Helpers;
+using ProductDto = GroceryWebApp.Models.Dto.ProductDto;
 using BusinessObjects.DTOs;
 using Utility.Common;
 using Utility.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
-namespace WebApplication.Services
+namespace GroceryWebApp.Services
 {
     public class BarcodeApiService : ApiClientService
     {

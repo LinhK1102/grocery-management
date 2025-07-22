@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
-using WebApplication.Models;
+using GroceryWebApp.Models;
 using Microsoft.AspNetCore.Http;
-using WebApplication.Service;
+using GroceryWebApp.Service;
 using Repositories.DTOs;
 using Utility.Common;
-using WebApplication.Constants;
-using WebApplication.Models.Dto;
+using GroceryWebApp.Constants;
+using GroceryWebApp.Models.Dto;
 using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
 using BusinessObjects.DTOs;
 
-namespace WebApplication.Services
+namespace GroceryWebApp.Services
 {
     public class AuthApiService : ApiClientService
     {

@@ -1,6 +1,6 @@
-﻿using WebApplication.Models.Dto;
+﻿using GroceryWebApp.Models.Dto;
 
-namespace WebApplication.Service
+namespace GroceryWebApp.Service
 {
     public class InvoiceItemApiService
     {

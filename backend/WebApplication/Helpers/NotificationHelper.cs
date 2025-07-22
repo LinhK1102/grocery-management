@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Utility.Hubs;
 
-namespace WebApplication.Helpers
+namespace GroceryWebApp.Helpers
 {
     public static class NotificationHelper
     {

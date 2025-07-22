@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace WebApplication.Models
+namespace GroceryWebApp.Models
 {
     public class ApiResponse<T>
     {

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication.Helpers;
-using WebApplication.Models.Dto;
-using WebApplication.Service;
-using WebApplication.Services;
+using GroceryWebApp.Helpers;
+using GroceryWebApp.Models.Dto;
+using GroceryWebApp.Service;
+using GroceryWebApp.Services;
 
-namespace WebApplication.Controllers
+namespace GroceryWebApp.Controllers
 {
     public class OrderController : Controller
     {
