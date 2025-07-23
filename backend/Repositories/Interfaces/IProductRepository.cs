@@ -20,5 +20,6 @@ namespace Repositories.Interfaces
 
         List<Product> GetSupplierProductList(int supplierId);
         List<Product> GetCategoryProductList(int categoryId);
+        IQueryable<Product> GetQueryable();
     }
 }

@@ -11,6 +11,9 @@ using GroceryWebApp.Models.Dto;
 using System.Threading.Tasks;
 using ProductUpdateDto = GroceryWebApp.Models.Dto.ProductUpdateDto;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OData.Query;
+using static GroceryWebApp.Constants.ApiRoutes;
+
 namespace GroceryAPI.Controllers
 {
     [Route("api/products")]
@@ -28,17 +31,40 @@ namespace GroceryAPI.Controllers
             _itemRepo = itemRepo;
         }
 
+        //[Authorize]
         [HttpGet("get-all")]
-        public IActionResult GetAllProduct()
+        public async Task<IActionResult> GetAllProduct(string search = "", int page = 1, int pageSize = 10)
         {
-            var products = _repo.GetAllProduct();
-            List<ProductDto> productDtos = new List<ProductDto>();
-            //for (var product in products)
-            //{
+            var products = await _repo.GetAllProduct();
 
-            //}
-            return Ok(SystemStatus.Success(products, "All products retrieved."));
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                products = products
+                    .Where(p => p.ProductName.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var total = products.Count;
+            var pagedProducts = products
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var productDtos = pagedProducts.Select(product => new ProductDto
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                CategoryId = product.CategoryId,
+                SupplierId = product.SupplierId,
+                UnitsInStock = product.UnitsInStock,
+                UnitPrice = product.UnitPrice,
+                BarcodeValue = product.BarcodeValue,
+                ExpiryDuration = product.ExpiryDuration
+            }).ToList();
+
+            return Ok(SystemStatus.Success(productDtos,"Products retrieved"));
         }
+
 
         [HttpGet("get-by-id/{id}")]
         public IActionResult GetProductById(int id)
@@ -50,7 +76,7 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPost("create")]
-        public IActionResult CreateProduct([FromBody] Product product)
+        public IActionResult CreateProduct([FromBody] BusinessObjects.Entities.Product product)
         {
             _repo.AddProduct(product);
             return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId },
@@ -63,7 +89,19 @@ namespace GroceryAPI.Controllers
             if (id != product.ProductId)
                 return BadRequest(SystemStatus.Fail("Mismatched product ID."));
 
-            _repo.UpdateProduct(product);
+            var updatedProduct = new BusinessObjects.DTOs.ProductUpdateDto
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                CategoryId = product.CategoryId,
+                SupplierId = product.SupplierId,
+                UnitsInStock = product.UnitsInStock,
+                UnitPrice = product.UnitPrice,
+                BarcodeValue = product.BarcodeValue,
+                ExpiryDuration = product.ExpiryDuration
+            };
+
+            _repo.UpdateProduct(updatedProduct);
 
             // Notify clients about the product update
             await _notificationHub.Clients.All.SendAsync("ProductUpdated", product);
@@ -150,6 +188,27 @@ namespace GroceryAPI.Controllers
             _itemRepo.CreateItem(item);
             return CreatedAtAction(nameof(GetProductById), new { id = item.ProductId },
                 SystemStatus.Success(item, "Items created successfully."));
+        }
+
+        [EnableQuery]
+        [HttpGet("/odata/products")]
+        public IActionResult GetProductsOData()
+        {
+            var query = _repo.GetQueryable(); // IQueryable<Product>
+
+            var dtoQuery = query.Select(product => new ProductDto
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                CategoryId = product.CategoryId,
+                SupplierId = product.SupplierId,
+                UnitsInStock = product.UnitsInStock,
+                UnitPrice = product.UnitPrice,
+                BarcodeValue = product.BarcodeValue,
+                ExpiryDuration = product.ExpiryDuration
+            });
+
+            return Ok(dtoQuery);
         }
     }
 }

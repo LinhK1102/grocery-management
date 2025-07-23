@@ -7,6 +7,7 @@ namespace GroceryWebApp.Models.Dto
 {
     public class ProductDto
     {
+        [Key]
         [JsonPropertyName("productId")]
         public int ProductId { get; set; }
 

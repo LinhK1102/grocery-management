@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.DTOs;
 using BusinessObjects.Entities;
 using DataAccess.DAO;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -127,6 +128,11 @@ namespace Repositories.Repositories
             }
 
             return true;
+        }
+
+        public IQueryable<Product> GetQueryable()
+        {
+            return _productDao.GetQueryable(); // giữ nguyên dạng IQueryable để OData xử lý được
         }
 
     }

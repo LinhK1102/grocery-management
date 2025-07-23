@@ -5,6 +5,9 @@ using GroceryWebApp.Service;
 using System.Text.Json;
 using GroceryWebApp.Helpers;
 using static GroceryWebApp.Constants.SystemMessages;
+using Utility.Common;
+using static GroceryWebApp.Constants.ApiRoutes;
+using System.Drawing.Printing;
 
 namespace GroceryWebApp.Controllers;
 public class ProductController : Controller
@@ -20,25 +23,92 @@ public class ProductController : Controller
         _supplierApiService = supplierApiService;
     }
 
-    public async Task<IActionResult> Index(string search = "", int page = 1, int pageSize = 10)
+    public async Task<IActionResult> Index(
+            string productName = "", string barcode = "", int? categoryId = null,
+            string selectedPriceRange = "", string selectedStockRange = "",
+            int page = 1, int pageSize = 10)
     {
-        var allProducts = await _productApiService.GetAllAsync();
+        (int? minPrice, int? maxPrice) = ParseRange(selectedPriceRange);
+        (int? minStock, int? maxStock) = ParseRange(selectedStockRange);
 
-        if (!string.IsNullOrEmpty(search))
+        List<ProductDto> products;
+        int total;
+
+        if (string.IsNullOrWhiteSpace(productName) &&  string.IsNullOrWhiteSpace(barcode) && categoryId == null &&
+            string.IsNullOrEmpty(selectedPriceRange) && string.IsNullOrEmpty(selectedStockRange))
         {
-            allProducts = allProducts
-                .Where(p => p.ProductName.Contains(search, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            // Không có search gì cả → gọi GetAllAsync
+            products = await _productApiService.GetAllAsync("", page, pageSize);
+            total = products.Count(); // Hoặc nếu API trả về total thì bạn dùng luôn
+            ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
         }
+        else
+        {
+            (products, total) = await _productApiService.GetODataFilteredAsync(
+               productName, barcode, categoryId, minPrice, maxPrice, minStock, maxStock, page, pageSize);
 
-        var total = allProducts.Count;
-        var items = allProducts.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
+        }
+        //check if null
+        products ??= new List<ProductDto>();
 
-        ViewBag.CurrentSearch = search;
+        await LoadSearchDataToViewBag(productName, barcode, categoryId, selectedPriceRange, selectedStockRange,
+                page, pageSize, total);
+        return View(products);
+
+    }
+
+    private async Task LoadSearchDataToViewBag(string productName = "",
+        string barcode = "", int? categoryId = null, string selectedPriceRange = "",
+        string selectedStockRange = "", int page = 1, int pageSize = 10, int total = 0)
+    {
+        ViewBag.UnitPriceRanges = UtitlityConstant.UnitPriceRanges;
+        ViewBag.StockQuantityRanges = UtitlityConstant.StockQuantityRanges;
+        ViewBag.ProductName = productName;
+        ViewBag.Barcode = barcode;
+        ViewBag.CategoryId = categoryId;
+        ViewBag.SelectedPriceRange = selectedPriceRange;
+        ViewBag.SelectedStockRange = selectedStockRange;
         ViewBag.Page = page;
         ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
 
-        return View(items);
+        var categories = await _categoryApiService.GetAllAsync();
+        ViewBag.Categories = categories.Select(c => new CategoryDto
+        {
+            CategoryId = c.CategoryId,
+            CategoryName = c.CategoryName
+        }).ToList();
+
+    }
+    private bool IsEmptySearch(string name, string barcode, int? cat, int? minP, int? maxP, int? minS, int? maxS)
+    {
+        return string.IsNullOrWhiteSpace(name)
+            && string.IsNullOrWhiteSpace(barcode)
+            && cat == null
+            && minP == null && maxP == null
+            && minS == null && maxS == null;
+    }
+
+
+    private (int? min, int? max) ParseRange(string range)
+    {
+        if (string.IsNullOrWhiteSpace(range)) return (null, null);
+
+        if (range.EndsWith("-"))
+        {
+            if (int.TryParse(range.TrimEnd('-'), out int minOnly))
+                return (minOnly, null);
+        }
+
+        var parts = range.Split("-");
+        if (parts.Length == 2 &&
+            int.TryParse(parts[0], out int min) &&
+            int.TryParse(parts[1], out int max))
+        {
+            return (min, max);
+        }
+
+        return (null, null);
     }
 
     public async Task<IActionResult> Details(int id)
@@ -141,8 +211,6 @@ public class ProductController : Controller
             ViewBag.SupplierName = sup?.SupplierName;
         }
     }
-
-
 
     public async Task<IActionResult> Delete(int id)
     {

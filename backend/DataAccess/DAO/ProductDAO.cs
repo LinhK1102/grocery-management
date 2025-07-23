@@ -131,5 +131,10 @@ namespace DataAccess.DAO
                 .Where(p => p.CategoryId == categoryId)
                 .ToList();
         }
+
+        public IQueryable<Product> GetQueryable()
+        {
+            return _context.Products.AsNoTracking();
+        }
     }
 }

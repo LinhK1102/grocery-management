@@ -45,5 +45,24 @@ namespace Utility.Common
             return apiResponse?.Data;
         }
 
+        public static async Task<List<T>> DeserializeODataResponseAsync<T>(HttpResponseMessage response)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var document = JsonDocument.Parse(json);
+
+            // Đảm bảo JSON có "value"
+            if (!document.RootElement.TryGetProperty("$values", out var valueElement))
+                throw new InvalidOperationException("OData response does not contain 'value'.");
+
+            // Deserialize phần value
+            var result = JsonSerializer.Deserialize<List<T>>(valueElement.GetRawText(), new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return result ?? new List<T>();
+        }
+
     }
 }

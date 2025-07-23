@@ -104,5 +104,15 @@ namespace Utility.Common
         //Invoice
         public static readonly string Invoice_File_Path = "invoices/test_invoice.pdf";
 
+        public static readonly List<string> UnitPriceRanges = new()
+        {
+            "0-50", "51-100", "101-200", "201-500", "500-"
+        };
+
+        public static readonly List<string> StockQuantityRanges = new()
+        {
+            "0-10", "11-50", "51-100", "101-500", "500-"
+        };
+
     }
 }
