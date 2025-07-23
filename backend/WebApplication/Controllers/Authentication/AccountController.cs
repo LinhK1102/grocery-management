@@ -25,11 +25,14 @@ namespace GroceryWebApp.Controllers.Authentication
 
         [HttpGet("login")]
         public async Task<IActionResult> LoginAsync()
+         
         {
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(User.Identity.Name))
             {
                 return RedirectToAction("Index", "Home");
+                //return View("~/Views/Shared/AccessDenied.cshtml");
             }
+
             if (!await IsApiAvailable())
             {
                 ViewBag.Error = "API hiện không khả dụng. Vui lòng thử lại sau.";
@@ -42,13 +45,10 @@ namespace GroceryWebApp.Controllers.Authentication
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
             if (!ModelState.IsValid)
                 return View(model);
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             var apiBaseUrl = _config["ApiBaseUrl"];
             var client = _httpClientFactory.CreateClient("API"); 
@@ -77,7 +77,7 @@ namespace GroceryWebApp.Controllers.Authentication
 
             if (!response.IsSuccessStatusCode)
             {
-                ViewBag.Error = $"Đăng nhập thất bại. Vui lòng kiểm tra Email hoặc Mật khẩu.";
+                ViewBag.Error = $"Login fail.Double check Email and/or Password.";
                 return View(model);
             }
 
@@ -127,6 +127,12 @@ namespace GroceryWebApp.Controllers.Authentication
             {
                 return false;
             }
+        }
+
+        [HttpGet("access-denied")]
+        public IActionResult AccessDenied()
+        {
+            return View("~/Views/Shared/AccessDenied.cshtml");
         }
 
     }

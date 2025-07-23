@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using GroceryWebApp.Service;
 using GroceryWebApp.Services;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,23 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";              // hoặc "/login"
         options.LogoutPath = "/Account/Logout";            // hoặc "/logout"
         options.AccessDeniedPath = "/Account/AccessDenied"; // hoặc "/access-denied"
+
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var token = context.Principal?.FindFirst("Token")?.Value;
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Console.WriteLine("Token không tồn tại hoặc đã hết hạn → đăng xuất");
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+            else
+            {
+                Console.WriteLine($"✅ Token hợp lệ: {token.Substring(0, 10)}...");
+            }
+        };
+
     });
 
 

@@ -6,6 +6,7 @@ using Repositories.DTOs;
 using Repositories.Interfaces;
 using Repositories.Repositories;
 using BusinessObjects.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GroceryAPI.Controllers
 {
@@ -20,6 +21,7 @@ namespace GroceryAPI.Controllers
             _employeeRepository = employeeRepository;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] EmployeeLoginRequest request)
         {
