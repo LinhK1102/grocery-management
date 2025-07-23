@@ -22,6 +22,7 @@ using Utility.Mapper;
 using Repositories.Manager;
 using GroceryWebApp.Models.Dto;
 using System.Net;
+using BusinessObjects.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,8 +99,8 @@ builder.Services.AddTransient(typeof(Lazy<>), typeof(LazyResolver<>));
 IEdmModel GetEdmModel()
 {
     var modelBuilder = new ODataConventionModelBuilder();
+    modelBuilder.EntitySet<ProductDto>("Products"); // Đổi từ Product → ProductDto
     modelBuilder.EntitySet<Employee>("Employees");
-    modelBuilder.EntitySet<Product>("Products");
     return modelBuilder.GetEdmModel();
 }
 
@@ -115,6 +116,7 @@ builder.Services.AddControllers()
         opt.Select().Filter().Expand().OrderBy().Count().SetMaxTop(100)
             .AddRouteComponents("odata", GetEdmModel());
     });
+
 
 // Add SignalR support
 builder.Services.AddSignalR();

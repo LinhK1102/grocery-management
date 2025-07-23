@@ -1,0 +1,10 @@
+﻿@{
+    Layout = null; // bỏ nếu bạn không dùng layout
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-4 text-warning">403</h1>
+    <p class="lead">You do not have permission to access this page.</p>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-warning mt-3">Back to Home</a>
+</div>
