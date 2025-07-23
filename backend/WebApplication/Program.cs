@@ -22,7 +22,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 // Log IP
 var host = Dns.GetHostEntry(Dns.GetHostName());
 var localIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.ToString();
-Console.WriteLine($"✅ Login app via: http://{localIp}:5101 OR http://localhost:5101");
+Console.WriteLine($"Login app via: http://{localIp}:5101 OR http://localhost:5101");
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
@@ -31,7 +31,7 @@ builder.Services.AddSignalR();
 var lanIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?.ToString();
 var apiBase = $"http://{lanIp}:5100/"; // ✅ Sử dụng IP thật
 builder.Configuration["ApiBaseUrl"] = apiBase; // ✅ Optional: ghi đè để dùng ở chỗ khác
-Console.WriteLine($"✅ API base address: {apiBase}");
+Console.WriteLine($"API base address: {apiBase}");
 
 // Đăng ký HttpClient dùng IP động
 builder.Services.AddHttpClient("API", client =>
@@ -58,13 +58,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                Console.WriteLine("Token không tồn tại hoặc đã hết hạn → đăng xuất");
+                Console.WriteLine("Token not exist or run-out time → logout");
                 context.RejectPrincipal();
                 await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             }
             else
             {
-                Console.WriteLine($"✅ Token hợp lệ: {token.Substring(0, 10)}...");
+                Console.WriteLine($"Token valid: {token.Substring(0, 50)}...");
             }
         };
 
