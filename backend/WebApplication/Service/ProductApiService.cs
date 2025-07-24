@@ -9,6 +9,7 @@ using System.Drawing.Printing;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using BusinessObjects.Commons;
+using Azure;
 
 namespace GroceryWebApp.Services
 {
@@ -74,14 +75,17 @@ namespace GroceryWebApp.Services
         }
 
 
-        public async Task<ProductDto?> GetByIdAsync(int id)
+        public async Task<ProductDetailDto?> GetByIdAsync(int id)
         {
             var client = CreateClient();
             var url = string.Format(ApiRoutes.Product.GetById, id);
             var res = await client.GetAsync(url);
 
+            var json = await res.Content.ReadAsStringAsync();
+            Console.WriteLine(json); // kiểm tra đầu vào
+
             // Dùng ApiResponse<ProductDto> vì "data" là 1 object
-            var product = await JsonUtility.DeserializeApiResponseAsyncObj<ProductDto>(res);
+            var product = await JsonUtility.DeserializeApiResponseAsyncObj<ProductDetailDto>(res);
             return product;
         }
 
@@ -162,6 +166,36 @@ namespace GroceryWebApp.Services
         {
             throw new NotImplementedException();
         }
+
+        public async Task<bool> CreateItemAsync(ItemCreateDto item)
+        {
+            var client = CreateClient();
+            var res = await client.PostAsJsonAsync(ApiRoutes.Item.Create, item);
+
+            if (!res.IsSuccessStatusCode)
+            {
+                var errorContent = await res.Content.ReadAsStringAsync();
+                Console.WriteLine(errorContent); // hoặc log nó ra
+            }
+
+            return res.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> CreateMultipleItemsAsync(List<ItemCreateDto> items)
+        {
+            var client = CreateClient(); 
+            var response = await client.PostAsJsonAsync(ApiRoutes.Item.CreateMultiple, items);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("CreateMultipleItemsAsync error: " + errorContent);
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+
+
     }
     public class ODataResponse<T>
     {

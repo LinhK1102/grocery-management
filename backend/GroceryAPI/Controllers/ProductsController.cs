@@ -22,7 +22,7 @@ namespace GroceryAPI.Controllers
     {
         private readonly IProductRepository _repo;
         private readonly IItemRepository _itemRepo;
-        private readonly IHubContext<NotificationHubs> _notificationHub; 
+        private readonly IHubContext<NotificationHubs> _notificationHub;
 
         public ProductsController(IProductRepository repo, IHubContext<NotificationHubs> notificationHub, IItemRepository itemRepo)
         {
@@ -62,7 +62,7 @@ namespace GroceryAPI.Controllers
                 ExpiryDuration = product.ExpiryDuration
             }).ToList();
 
-            return Ok(SystemStatus.Success(productDtos,"Products retrieved"));
+            return Ok(SystemStatus.Success(productDtos, "Products retrieved"));
         }
 
 
@@ -177,17 +177,50 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPost("items-create")]
-        public IActionResult CreateItems([FromBody] Item item)
+        public IActionResult CreateItems([FromBody] List<ItemCreateDto> itemDtos)
         {
-            var productExists = _repo.GetProductById(item.ProductId);
-            if (productExists == null)
+            if (itemDtos == null || !itemDtos.Any())
+                return BadRequest("Item list is empty.");
+
+            var createdItems = new List<BusinessObjects.Entities.Item>();
+
+            foreach (var itemDto in itemDtos)
             {
-                return BadRequest("Product not exist!");
+                if (itemDto.Quantity <= 0)
+                    continue; // Skip invalid item
+
+                var product = _repo.GetProductById(itemDto.ProductId);
+                if (product == null)
+                    continue; // Skip if product doesn't exist
+
+                var item = new BusinessObjects.Entities.Item
+                {
+                    ProductId = itemDto.ProductId,
+                    Barcode = itemDto.Barcode,
+                    BatchCode = itemDto.BatchCode,
+                    ManufactureDate = itemDto.ManufactureDate,
+                    ExpiryDate = itemDto.ExpiryDate,
+                    Quantity = itemDto.Quantity,
+                    ImportedDate = itemDto.ImportedDate != null
+                                ? itemDto.ImportedDate
+                                : DateTime.UtcNow
+                };
+
+                var savedItem = _itemRepo.CreateItem(item);
+
+                if (savedItem != null)
+                {
+                    createdItems.Add(savedItem);
+
+                    // Adjust stock only if save is successful
+                    _repo.AdjustStock(product.BarcodeValue, UtitlityConstant.Item_Action_Restock, itemDto.Quantity);
+                }
             }
 
-            _itemRepo.CreateItem(item);
-            return CreatedAtAction(nameof(GetProductById), new { id = item.ProductId },
-                SystemStatus.Success(item, "Items created successfully."));
+            if (!createdItems.Any())
+                return StatusCode(500, SystemStatus.Fail("No items were created."));
+
+            return Ok(SystemStatus.Success(createdItems, "Items created successfully."));
         }
 
         [EnableQuery]

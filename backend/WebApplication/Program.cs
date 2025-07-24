@@ -9,6 +9,7 @@ using System.Text.Json;
 using GroceryWebApp.Service;
 using GroceryWebApp.Services;
 using Microsoft.AspNetCore.Authentication;
+using Utility.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(option
 });
 
 builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new ValuesWrapperConverterFactory());
+    })
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>

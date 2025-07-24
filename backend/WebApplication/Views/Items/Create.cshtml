@@ -1,0 +1,84 @@
+﻿@model List<GroceryWebApp.Models.Dto.ItemDto>
+@{
+    var product = ViewBag.Product as GroceryWebApp.Models.Dto.ProductDetailDto;
+}
+
+<div class="card shadow rounded-4 mb-4">
+    <div class="card-body">
+        <h4 class="mb-3">Add New Batch for Product</h4>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <strong>Product:</strong> @product.ProductName <br />
+                <strong>Barcode:</strong> @product.BarcodeValue <br />
+                <strong>Unit Price:</strong> @product.UnitPrice.ToString("N0") ₫<br />
+                <strong>In Stock:</strong> @product.UnitsInStock units
+            </div>
+            <div class="col-md-6 text-md-end text-sm-start mt-3 mt-md-0">
+                <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">← Back</a>
+            </div>
+        </div>
+
+        <form asp-action="CreateMultiple" method="post">
+            <input type="hidden" name="ProductId" value="@product.ProductId" />
+            <input type="hidden" name="Barcode" value="@product.BarcodeValue" />
+
+            <table class="table table-bordered table-striped align-middle" id="itemTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Batch Code</th>
+                        <th>Manufacture Date</th>
+                        <th>Expiry Date</th>
+                        <th>Imported Date</th>
+                        <th>Quantity</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input name="items[0].BatchCode" class="form-control" /></td>
+                        <td><input name="items[0].ManufactureDate" type="date" class="form-control" /></td>
+                        <td><input name="items[0].ExpiryDate" type="date" class="form-control" /></td>
+                        <td><input name="items[0].ImportedDate" type="date" class="form-control" /></td>
+                        <td><input name="items[0].Quantity" type="number" class="form-control" /></td>
+                        <td><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="mb-3">
+                <button type="button" id="addRow" class="btn btn-outline-primary">➕ Add Row</button>
+            </div>
+
+            <button type="submit" class="btn btn-success">💾 Save All</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let rowIndex = 1;
+
+            // Add new row
+            $('#addRow').on('click', function () {
+                const newRow = `
+                <tr>
+                    <td><input name="items[${rowIndex}].BatchCode" class="form-control" /></td>
+                    <td><input name="items[${rowIndex}].ManufactureDate" type="date" class="form-control" /></td>
+                    <td><input name="items[${rowIndex}].ExpiryDate" type="date" class="form-control" /></td>
+                    <td><input name="items[${rowIndex}].ImportedDate" type="date" class="form-control" /></td>
+                    <td><input name="items[${rowIndex}].Quantity" type="number" class="form-control" /></td>
+                    <td><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
+                </tr>`;
+                $('#itemTable tbody').append(newRow);
+                rowIndex++;
+            });
+
+            // Remove row
+            $('#itemTable').on('click', '.remove-row', function () {
+                $(this).closest('tr').remove();
+            });
+        });
+    </script>
+}

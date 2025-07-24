@@ -97,5 +97,12 @@
             public const string Create = "/api/categories/create-or-get";
             public const string Update = "/api/categories/update/{id}";
         }
+
+        public static class Item
+        {
+            public const string GetById = "/api/products/get-items-by-id/{0}";
+            public const string Create = "/api/products/items-create";
+            public const string CreateMultiple = "/api/products/items-create";
+        }
     }
 }

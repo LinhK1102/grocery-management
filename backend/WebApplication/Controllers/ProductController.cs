@@ -138,7 +138,8 @@ public class ProductController : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        var product = await _productApiService.GetByIdAsync(id);
+        var productDto = await _productApiService.GetByIdAsync(id);
+        var product = DtoExtensions.DetailToProductDto(productDto);
         if (product == null)
         {
             await LoadDropdownDataToViewBag(product);

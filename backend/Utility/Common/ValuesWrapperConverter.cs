@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Utility.Common
 {
+    // Xử lý các list bọc bởi $values hoặc array trực tiếp
     public class ValuesWrapperConverter<T> : JsonConverter<ICollection<T>>
     {
         public override ICollection<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -20,13 +16,11 @@ namespace Utility.Common
             using var doc = JsonDocument.ParseValue(ref reader);
             var root = doc.RootElement;
 
-            // Nếu là object có $values
             if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("$values", out var valuesElement))
             {
                 return JsonSerializer.Deserialize<List<T>>(valuesElement.GetRawText(), options) ?? new List<T>();
             }
 
-            // Nếu là array trực tiếp
             if (root.ValueKind == JsonValueKind.Array)
             {
                 return JsonSerializer.Deserialize<List<T>>(root.GetRawText(), options) ?? new List<T>();
@@ -37,7 +31,6 @@ namespace Utility.Common
 
         public override void Write(Utf8JsonWriter writer, ICollection<T> value, JsonSerializerOptions options)
         {
-            // Ghi lại theo cấu trúc: { "$values": [...] }
             writer.WriteStartObject();
             writer.WritePropertyName("$values");
             JsonSerializer.Serialize(writer, value, options);
@@ -45,5 +38,22 @@ namespace Utility.Common
         }
     }
 
+    // Factory để tự động gán converter cho List<T> và ICollection<T>
+    public class ValuesWrapperConverterFactory : JsonConverterFactory
+    {
+        public override bool CanConvert(Type typeToConvert)
+        {
+            if (!typeToConvert.IsGenericType) return false;
 
+            var genericDef = typeToConvert.GetGenericTypeDefinition();
+            return genericDef == typeof(List<>) || genericDef == typeof(ICollection<>);
+        }
+
+        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        {
+            var itemType = typeToConvert.GetGenericArguments()[0];
+            var converterType = typeof(ValuesWrapperConverter<>).MakeGenericType(itemType);
+            return (JsonConverter)Activator.CreateInstance(converterType)!;
+        }
+    }
 }

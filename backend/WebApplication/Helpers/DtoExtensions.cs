@@ -90,6 +90,22 @@ namespace GroceryWebApp.Helpers
             };
         }
 
+        public static ProductDto DetailToProductDto(this ProductDetailDto detail)
+        {
+            return new ProductDto
+            {
+                ProductId = detail.ProductId,
+                ProductName = detail.ProductName,
+                CategoryId = detail.CategoryId,
+                SupplierId = detail.SupplierId,
+                UnitsInStock = detail.UnitsInStock,
+                UnitPrice = detail.UnitPrice,
+                BarcodeValue = detail.BarcodeValue,
+                ExpiryDuration = detail.ExpiryDuration,
+                // Nếu cần giữ Items thì gán ở đây
+                Items = detail.Items,
+                OrderDetails = detail.OrderDetails
+            };
+        }
     }
-
 }
