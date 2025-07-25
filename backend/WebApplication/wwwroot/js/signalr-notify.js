@@ -1,5 +1,6 @@
 ﻿const connection = new signalR.HubConnectionBuilder()
     .withUrl("/notificationHub")
+    .withAutomaticReconnect()
     .build();
 
 // Shared function to show a toast
@@ -49,6 +50,21 @@ connection.on("OrderPlaced", function (order) {
 
 connection.on("LowStockAlert", function (product) {
     showToast(`Low stock alert: "${product.productName}"`, "danger");
+});
+
+connection.on("Notify", function (message) {
+    console.log("[Notify received]:", message); 
+    showToast(message, "info");
+});
+
+connection.onreconnecting(error => {
+    console.warn("SignalR reconnecting...", error);
+});
+connection.onreconnected(connectionId => {
+    console.info("SignalR reconnected! Connection ID:", connectionId);
+});
+connection.onclose(error => {
+    console.error("SignalR connection closed:", error);
 });
 
 connection.start().catch(err => console.error(err));

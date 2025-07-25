@@ -1,0 +1,159 @@
+﻿@{
+    ViewData["Title"] = "Scan Barcode";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center">
+        <i class="fas fa-barcode text-primary me-2"></i>Scan or Enter Product Code
+    </h2>
+
+    <ul class="nav nav-tabs justify-content-center mt-4" id="barcodeTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="camera-tab" data-bs-toggle="tab" data-bs-target="#camera" type="button" role="tab">
+                <i class="fas fa-camera"></i> Camera
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image" type="button" role="tab">
+                <i class="fas fa-image"></i> Upload Image
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button" role="tab">
+                <i class="fas fa-keyboard"></i> Manual Input
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-4" id="barcodeTabContent">
+        <!-- Camera Tab -->
+        <div class="tab-pane fade show active" id="camera" role="tabpanel">
+            <div id="statusMessage" class="text-info mb-2 text-center">Opening camera, please align the code...</div>
+            <div id="scanner-container" class="border rounded shadow-sm mx-auto" style="width: 100%; max-width: 600px; aspect-ratio: 16/9;"></div>
+        </div>
+
+        <!-- Image Upload Tab -->
+        <div class="tab-pane fade" id="image" role="tabpanel">
+            <div class="text-center">
+                <label for="fileInput" class="btn btn-secondary">
+                    <i class="fas fa-upload"></i> Choose Image
+                </label>
+                <input type="file" id="fileInput" accept="image/*" class="d-none" />
+                <p class="text-muted mt-2">Upload a clear image with barcode or QR code.</p>
+            </div>
+        </div>
+
+        <!-- Manual Input Tab -->
+        <div class="tab-pane fade" id="manual" role="tabpanel">
+            <div class="mb-3 text-center">
+                <label for="manualInput" class="form-label">Enter Barcode or QR Code</label>
+                <input type="text" class="form-control w-50 mx-auto" id="manualInput" placeholder="Enter code here..." />
+                <button class="btn btn-primary mt-2" onclick="submitManual()">
+                    <i class="fas fa-paper-plane"></i> Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Display -->
+    <div class="alert alert-success d-none mt-3 text-center" id="scanSuccess">
+        <i class="fas fa-check-circle me-1"></i>
+        Scanned Code: <span id="barcodeText"></span>
+    </div>
+
+    <!-- Hidden Form -->
+    <form id="barcodeForm" method="post" asp-controller="Barcode" asp-action="HandleBarcode">
+        <input type="hidden" id="barcodeValue" name="barcodeValue" />
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/%40ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
+    <script>
+        const statusMessage = document.getElementById("statusMessage");
+        const barcodeText = document.getElementById("barcodeText");
+        const barcodeInput = document.getElementById("barcodeValue");
+        const scanSuccess = document.getElementById("scanSuccess");
+        const fileInput = document.getElementById("fileInput");
+
+        function onBarcodeScanned(code) {
+            barcodeInput.value = code;
+            barcodeText.textContent = code;
+            scanSuccess.classList.remove("d-none");
+            statusMessage.textContent = "✅ Code scanned: " + code;
+            setTimeout(() => document.getElementById("barcodeForm").submit(), 1500);
+        }
+
+        function startCameraScan() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#scanner-container'),
+                    constraints: {
+                        facingMode: { exact: "environment" },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader", "upc_reader", "qr_reader"]
+                },
+                locate: true
+            }, function (err) {
+                if (err) {
+                    console.error("Camera error:", err);
+                    statusMessage.textContent = "❌ Unable to access camera.";
+                    return;
+                }
+                Quagga.start();
+                statusMessage.textContent = "📷 Camera active. Hold code steady in the frame.";
+            });
+
+            Quagga.onDetected(data => {
+                const code = data.codeResult.code;
+                if (code) {
+                    Quagga.stop();
+                    onBarcodeScanned(code);
+                }
+            });
+        }
+
+        // Image Upload Decode
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                Quagga.decodeSingle({
+                    src: reader.result,
+                    numOfWorkers: 0,
+                    decoder: { readers: ["ean_reader", "code_128_reader", "upc_reader", "qr_reader"] },
+                    locate: true
+                }, result => {
+                    if (result && result.codeResult) {
+                        onBarcodeScanned(result.codeResult.code);
+                    } else {
+                        alert("❌ Code could not be detected.");
+                        statusMessage.textContent = "⚠️ Try another image.";
+                    }
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Manual input submit
+        function submitManual() {
+            const value = document.getElementById("manualInput").value.trim();
+            if (!value) {
+                alert("Please enter a code.");
+                return;
+            }
+            onBarcodeScanned(value);
+        }
+
+        // Start scanning when camera tab is active
+        document.addEventListener("DOMContentLoaded", startCameraScan);
+    </script>
+}

@@ -9,6 +9,7 @@ using BusinessObjects.DTOs;
 using Utility.Common;
 using Utility.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using System.Text.Json.Serialization;
 
 namespace GroceryWebApp.Services
 {
@@ -29,10 +30,31 @@ namespace GroceryWebApp.Services
         {
             var client = CreateClient();
             var url = ApiRoutes.Barcode.Scan.Replace("{0}", barcode);
+
+            Console.WriteLine($"➡️ Calling API: {url}");
+
             var res = await client.GetAsync(url);
-            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<ProductDto>(res);
-            return apiResponse.Data;
+
+            var json = await res.Content.ReadAsStringAsync();
+            Console.WriteLine("📩 Response JSON:");
+            Console.WriteLine(json);
+
+            if (!res.IsSuccessStatusCode) return null;
+
+            // Deserialize thành ApiResponse<ApiResponse<ProductDto>>
+            var outerResponse = JsonSerializer.Deserialize<ApiResponse<ApiResponse<ProductDto>>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (outerResponse?.Data?.Success == true)
+            {
+                return outerResponse.Data.Data;
+            }
+
+            return null;
         }
+
     }
 
 

@@ -3,6 +3,7 @@ using BusinessObjects.Commons;
 using BusinessObjects.DTOs;
 using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repositories.Interfaces;
@@ -14,6 +15,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Utility.Hubs;
 using Utility.Mapper;
 
 namespace Repositories.Repositories
@@ -23,12 +25,14 @@ namespace Repositories.Repositories
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly IProductRepository _productRepository;
-
-        public BarcodeRepository(HttpClient httpClient, IConfiguration configuration, IProductRepository productRepository)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public BarcodeRepository(HttpClient httpClient, IConfiguration configuration, IProductRepository productRepository,
+            IHubContext<NotificationHub> hubContext)
         {
             _httpClient = httpClient;
             _apiKey = configuration["UpcApi:ApiKey"]; // Lấy config từ API project
             _productRepository = productRepository;
+            _hubContext = hubContext;
         }
 
         public async Task<UpcProductResponse?> GetProductInfoFromApiAsync(string barcode)
@@ -51,6 +55,8 @@ namespace Repositories.Repositories
                 using var doc = JsonDocument.Parse(jsonString);
 
                 var root = doc.RootElement;
+
+                if (!root.TryGetProperty("success", out var successProp) || !successProp.GetBoolean()) return null;
 
                 string GetString(string name) =>
                     root.TryGetProperty(name, out var prop) && prop.ValueKind == JsonValueKind.String
@@ -99,8 +105,10 @@ namespace Repositories.Repositories
                     Reviews = reviews
                 };
             }
-            catch
+            catch (Exception ex)
             {
+                // Log lỗi nếu cần (không throw ra ngoài)
+                Console.WriteLine("API error: " + ex.Message);
                 return null;
             }
         }
@@ -111,6 +119,9 @@ namespace Repositories.Repositories
             var existingProduct = _productRepository.GetProductByBarcode(barcode);
             if (existingProduct != null)
             {
+                // Gửi thông báo qua SignalR
+                await _hubContext.Clients.All.SendAsync("Notify", "Product already existed!");
+                Console.WriteLine("SignalR notify sent!");  
                 return new ApiResponse<Product>
                 {
                     Message = "Product already existed!",
@@ -123,9 +134,11 @@ namespace Repositories.Repositories
             var upcResponse = await GetProductInfoFromApiAsync(barcode);
             if (upcResponse == null || !upcResponse.Status)
             {
+                // Gửi thông báo qua SignalR
+                await _hubContext.Clients.All.SendAsync("Notify", "Product not found or API unreachable.");
                 return new ApiResponse<Product>
                 {
-                    Message = "Failed to fetch product information from external API",
+                    Message = "Product not found or API unreachable.",
                     Success = false,
                     Data = null
                 };
@@ -134,7 +147,8 @@ namespace Repositories.Repositories
             // Step 3: Map the response data to a Product entity
             var newProduct = UpcProductMapper.ToProductEntity(upcResponse);
             var insertedProduct = await _productRepository.AddProduct(newProduct);
-
+            // Gửi thông báo qua SignalR
+            await _hubContext.Clients.All.SendAsync("Notify", "Product created successfully");
             return new ApiResponse<Product>
             {
                 Message = "Product created successfully",

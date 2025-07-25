@@ -11,6 +11,7 @@ using GroceryWebApp.Services;
 using Microsoft.AspNetCore.Authentication;
 using Utility.Common;
 using Utility.Hubs;
+using Utility.Hubs;
 using GroceryWebApp.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,7 +41,10 @@ Console.WriteLine($"- HTTPS: https://{localIp}:{httpsPort} OR https://localhost:
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Mặc định là 15s
+});
 builder.Services.AddLogging();
 
 // Get IP LAN (IPv4)
