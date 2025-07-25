@@ -19,10 +19,13 @@ namespace GroceryWebApp.Controllers
         private readonly PaymentService _paymentService;
         private readonly CustomerApiService _customerApiService;
         private readonly EmployeeApiService _employeeApiService;
+        private readonly RetailOutletApiService _retailOutletApiService;
+        private readonly WarehouseApiService _warehouseApiService;
 
         public OrderController(PaymentService paymentService, OrderApiService orderApiService,
             OrderDetailApiService orderDetailApiService, InvoiceApiService invoiceApiService,
-            ProductApiService productApiService, CustomerApiService customerApiService, EmployeeApiService employeeApiService)
+            ProductApiService productApiService, CustomerApiService customerApiService, EmployeeApiService employeeApiService, 
+            RetailOutletApiService retailOutletApiService, WarehouseApiService warehouseApiService)
         {
             _paymentService = paymentService;
             _orderApiService = orderApiService;
@@ -31,6 +34,8 @@ namespace GroceryWebApp.Controllers
             _productApiService = productApiService;
             _customerApiService = customerApiService;
             _employeeApiService = employeeApiService;
+            _retailOutletApiService = retailOutletApiService;
+            _warehouseApiService = warehouseApiService;
         }
 
         public async Task<IActionResult> Index()
@@ -42,10 +47,40 @@ namespace GroceryWebApp.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var order = await _orderApiService.GetByIdAsync(id);
-            if (order == null) return View("NotFound");
-
             var details = await _orderDetailApiService.GetByOrderIdAsync(id);
-            return View(Tuple.Create(order, details));
+
+            var customer = (await _customerApiService.SearchCustomersAsync(UtitlityConstant.Customer_Type_Unknown)).FirstOrDefault();
+            var employee = await _employeeApiService.GetByIdAsync(order.EmployeeId);
+            var outlet = order.OutletId != null ? await _retailOutletApiService.GetByIdAsync(order.OutletId.Value) : null;
+            var warehouse = order.WarehouseId != null ? await _warehouseApiService.GetByIdAsync(order.WarehouseId.Value) : null;
+
+            var detailViewDtos = new List<OrderDetailViewDto>();
+            foreach (var item in details)
+            {
+                var product = await _productApiService.GetByIdAsync(item.ProductId);
+                detailViewDtos.Add(new OrderDetailViewDto
+                {
+                    OrderDetailId = item.OrderDetailId,
+                    OrderId = item.OrderId,
+                    ProductId = item.ProductId,
+                    ProductName = product.ProductName,
+                    Quantity = item.Quantity,
+                    UnitPriceAtTimeOfSale = item.UnitPriceAtTimeOfSale,
+                    DiscountApplied = item.DiscountApplied
+                });
+            }
+
+            var vm = new OrderDetailsViewModel
+            {
+                Order = order,
+                Details = detailViewDtos,
+                CustomerName = customer?.CustomerName   ?? "N/A",
+                EmployeeName = employee?.EmployeeName ?? "N/A",
+                OutletName = outlet?.RetailOutletName ?? "N/A",
+                WarehouseName = warehouse?.WarehouseName ?? "N/A"
+            };
+
+            return View(vm);
         }
 
         [HttpGet]
@@ -92,27 +127,6 @@ namespace GroceryWebApp.Controllers
             dto.CustomerName = (string.IsNullOrWhiteSpace(dto.CustomerName)
                 || dto.CustomerName.ToLower().Contains(UtitlityConstant.Customer_Default_Name.ToLower()))
                                 ? UtitlityConstant.Customer_Default_Name : dto.CustomerName;
-            if (dto.IsBanking)
-            {
-                // Create PayOS QR & redirect
-                var baseUrl = $"{Request.Scheme}://{Request.Host}";
-                var total = (double)dto.Items.Sum(i => i.UnitPrice * i.Quantity);
-                var request = new CreateRequest(total, $"{dto.CustomerName}", baseUrl);
-                var res = await _paymentService.CreateAsync(request);
-
-                if (res?.Data?.CheckoutUrl != null)
-                    return Redirect(res.Data.CheckoutUrl);
-
-                TempData["Error"] = $"Failed to initiate payment link due to [{res.Desc}]";
-                TempData["QrCode"] = res?.Data?.QrCode;
-
-                var productDto = await _productApiService.GetAllAsync();
-                var products = productDto.Items;
-                //var products = await _productApiService.GetAllAsync();
-                ViewBag.Products = products.OrderBy(p => p.ProductName).ToList() ?? new List<ProductDto>();
-
-                return View("Create", dto);
-            }
 
             var email = User.FindFirst(ClaimTypes.Name)?.Value;
             var employeeResult = await _employeeApiService.SearchByEmailName(email);
@@ -134,23 +148,45 @@ namespace GroceryWebApp.Controllers
                 Items = dto.Items.Select(i => new OrderItemDto
                 {
                     ProductId = i.ProductId,
+                    ProductName = i.ProductName,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice
                 }).ToList()
             };
 
-            var b = await _orderApiService.CreateAsync(orderDto);
-            if (b)
-                return RedirectToAction(nameof(PaymentSuccess));
+            var order = await _orderApiService.CreateAsync(orderDto);
+            if (dto.IsBanking && order != null)
+            {
+                // Create PayOS QR & redirect
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var total = (double)dto.Items.Sum(i => i.UnitPrice * i.Quantity);
+                var request = new CreateRequest(total, $"{dto.CustomerName}", baseUrl);
+                var res = await _paymentService.CreateAsync(request);
+
+                if (res?.Data?.CheckoutUrl != null)
+                    return Redirect(res.Data.CheckoutUrl);
+
+                TempData["Error"] = $"Failed to initiate payment link due to [{res.Desc}]";
+                TempData["QrCode"] = res?.Data?.QrCode;
+
+                var productDto = await _productApiService.GetAllAsync();
+                var products = productDto.Items;
+                //var products = await _productApiService.GetAllAsync();
+                ViewBag.Products = products.OrderBy(p => p.ProductName).ToList() ?? new List<ProductDto>();
+
+                return View("Create", dto);
+            }
+            else if (order != null)
+                return RedirectToAction(nameof(PaymentSuccess), new { orderId = order.OrderId });
 
             return RedirectToAction(nameof(PaymentCancel));
         }
 
         [HttpGet]
-        public IActionResult PaymentSuccess()
+        public IActionResult PaymentSuccess(int orderId)
         {
             TempData["Success"] = "✅ Payment completed successfully!";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction(nameof(Details),new {id = orderId});
         }
 
         [HttpGet]

@@ -12,10 +12,11 @@ namespace GroceryAPI.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderRepository _orderRepository;
-
-        public OrderController(IOrderRepository orderRepository)
+        private readonly IProductRepository _repo;
+        public OrderController(IOrderRepository orderRepository, IProductRepository repo)
         {
             _orderRepository = orderRepository;
+            _repo = repo;
         }
 
         [HttpGet("get-all")]
@@ -52,7 +53,13 @@ namespace GroceryAPI.Controllers
                     UnitPriceAtTimeOfSale = item.UnitPrice,
                 }).ToList()
             };
+            Console.WriteLine($"Insert items: {order.OrderDetails.Count}");
+
             _orderRepository.CreateOrder(order);
+
+            foreach (var item in order.OrderDetails)
+                _repo.AdjustStock(item.ProductId, UtitlityConstant.Item_Action_Sell, item.Quantity);
+
             return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId },
                 SystemStatus.Success(order, "Order created successfully."));
         }

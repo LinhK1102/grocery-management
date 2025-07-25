@@ -118,6 +118,20 @@ namespace DataAccess.DAO
             _context.SaveChanges();
             return true;
         }
+
+        public bool AdjustStock(int productId, int action, int quantity)
+        {
+            var product = _context.Products.FirstOrDefault(p => p.ProductId == productId);
+            if (product == null) return false;
+
+            if (action == 0)
+                product.UnitsInStock -= quantity; //sell action
+            else if (action == 1)
+                product.UnitsInStock += quantity; //restock action
+
+            _context.SaveChanges();
+            return true;
+        }
         public List<Product> GetSupplierProductList(int supplierId)
         {
             return _context.Products

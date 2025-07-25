@@ -105,6 +105,7 @@ namespace Repositories.Repositories
         public List<Product> GetLowStockProducts(int threshold) => _productDao.GetLowStockProducts(threshold);
 
         public bool AdjustStock(string barcode, int action, int quantity) => _productDao.AdjustStock(barcode, action, quantity);
+        public bool AdjustStock(int productId, int action, int quantity) => _productDao.AdjustStock(productId, action, quantity);
 
         public List<Product> GetSupplierProductList(int supplierId) => _productDao.GetSupplierProductList(supplierId);
         public List<Product> GetCategoryProductList(int supplierId) => _productDao.GetCategoryProductList(supplierId);

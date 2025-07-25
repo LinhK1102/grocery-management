@@ -6,6 +6,7 @@ using GroceryWebApp.Constants;
 using GroceryWebApp.Models;
 using GroceryWebApp.Models.Dto;
 using GroceryWebApp.Service;
+using System.Text.Json;
 
 namespace GroceryWebApp.Services
 {
@@ -29,11 +30,29 @@ namespace GroceryWebApp.Services
             return apiResponse.Data;
         }
 
-        public async Task<bool> CreateAsync(OrderUpdateDto dto)
+        public async Task<OrderDto> CreateAsync(OrderUpdateDto dto)
         {
-            var res = await CreateClient().PostAsJsonAsync(ApiRoutes.Orders.Create, dto);
-            return res.IsSuccessStatusCode;
+            // Log JSON trước khi gửi
+            var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
+            Console.WriteLine("=== Sending JSON to API ===");
+            Console.WriteLine(json);
+
+            var client = CreateClient();
+            var response = await client.PostAsJsonAsync(ApiRoutes.Orders.Create, dto);
+
+            // Log status code
+            Console.WriteLine($"=== Response Status Code: {response.StatusCode} ===");
+
+            // Log nội dung phản hồi
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("=== Response Body ===");
+            Console.WriteLine(responseContent);
+
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<OrderDto>(response);
+
+            return apiResponse.Data;
         }
+
 
         public async Task<bool> UpdateAsync(int id, OrderDto dto)
         {
