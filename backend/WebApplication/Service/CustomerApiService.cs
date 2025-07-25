@@ -18,8 +18,8 @@ namespace GroceryWebApp.Services
             var client = CreateClient();
             var url = string.Format(ApiRoutes.Customers.Search, searchTerm);
             var res = await client.GetAsync(url);
-            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<List<CustomerDto>>(res);
-            return apiResponse.Data ?? new();
+            var apiResponse = await JsonUtility.DeserializeWrappedListAsync<CustomerDto>(res);
+            return apiResponse;
         }
 
         public async Task<List<CustomerDto>> GetHighDiscountCustomersAsync(decimal minDiscount)

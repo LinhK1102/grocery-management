@@ -24,6 +24,7 @@
             public const string Update = "/api/employees/{0}";
             public const string Delete = "/api/employees/{0}";
             public const string TopSellers = "/api/employees/top-sellers";
+            public const string SearchName = "/api/Employees/search/{0}";
         }
 
         public static class Auth
@@ -103,6 +104,10 @@
             public const string GetById = "/api/products/get-items-by-id/{0}";
             public const string Create = "/api/products/items-create";
             public const string CreateMultiple = "/api/products/items-create";
+        }
+        public static class Payment
+        {
+            public const string Base = "/api/Payment";
         }
     }
 }

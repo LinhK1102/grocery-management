@@ -29,7 +29,7 @@ namespace GroceryWebApp.Services
             return apiResponse.Data;
         }
 
-        public async Task<bool> CreateAsync(OrderDto dto)
+        public async Task<bool> CreateAsync(OrderUpdateDto dto)
         {
             var res = await CreateClient().PostAsJsonAsync(ApiRoutes.Orders.Create, dto);
             return res.IsSuccessStatusCode;

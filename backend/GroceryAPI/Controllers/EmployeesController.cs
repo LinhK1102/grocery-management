@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Utility.Common;
 using GroceryWebApp.Models.Dto;
 using Microsoft.AspNetCore.OData.Query;
+using static GroceryWebApp.Constants.ApiRoutes;
 
 
 namespace GroceryAPI.Controllers
@@ -61,7 +62,7 @@ namespace GroceryAPI.Controllers
             if (id != dto.EmployeeId)
                 return BadRequest(SystemStatus.Fail("Mismatched employee ID."));
 
-            var employee = new Employee
+            var employee = new BusinessObjects.Entities.Employee
             {
                 EmployeeId = dto.EmployeeId,
                 EmployeeName = dto.EmployeeName,
@@ -99,12 +100,16 @@ namespace GroceryAPI.Controllers
             return Ok(all);
         }
 
-        [HttpGet("search/{employeeeName}")]
-        public IActionResult GetEmployeeByEmployeeeName(string employeeeEmail)
+        [HttpGet("search/{employeeeEmail}")]
+        public async Task<IActionResult> GetEmployeeByEmployeeeName(string employeeeEmail)
         {
             if (employeeeEmail.IsNullOrEmpty()) return Ok(SystemStatus.Fail("Employees is null."));
 
-            var employees = _employeeRepository.GetEmployeeByEmail(employeeeEmail);
+            var employees = await _employeeRepository.GetEmployeeByEmail(employeeeEmail);
+
+            if (employees == null)
+                return Ok(SystemStatus.Fail("Employee not found."));
+
             return Ok(SystemStatus.Success(employees, "All employees retrieved."));
         }
 

@@ -1,181 +1,140 @@
-﻿@using GroceryWebApp.Models.Dto
-@model List<GroceryWebApp.Models.Dto.ProductDto>
-@{
-    ViewData["Title"] = "Product List";
-    var page = (int)ViewBag.Page;
-    var totalPages = (int)ViewBag.TotalPages;
-    
-    var categories = ViewBag.Categories as List<CategoryDto> ?? new List<CategoryDto>();
-    var categoryId = ViewBag.CategoryId?.ToString();
-    var productName = ViewBag.ProductName?.ToString() ?? "";
-    var barcode = ViewBag.Barcode?.ToString() ?? "";
-
-    var selectedPriceRange = ViewBag.SelectedPriceRange?.ToString() ?? "";
-    var selectedStockRange = ViewBag.SelectedStockRange?.ToString() ?? "";
-
-    var unitPriceRanges = ViewBag.UnitPriceRanges as List<string> ?? new List<string>();
-    var stockQuantityRanges = ViewBag.StockQuantityRanges as List<string> ?? new List<string>();
+﻿@{
+    ViewData["Title"] = "Create Order / Invoice";
+    var products = ViewBag.Products as List<dynamic> ?? new List<dynamic>();
 }
 
-<div class="container mt-4">
-    <h2 class="mb-3">Product List</h2>
+<h2 class="mb-4">Create Order</h2>
 
-    <form method="get" class="row g-3 align-items-end mb-4">
-        <div class="col-md-3">
-            <label for="productName" class="form-label">Product Name</label>
-            <input type="text" class="form-control" id="productName" name="productName" value="@productName" placeholder="Enter name">
-        </div>
-
-        <div class="col-md-3">
-            <label for="barcode" class="form-label">Barcode</label>
-            <input type="text" class="form-control" id="barcode" name="barcode" value="@barcode" placeholder="Enter barcode">
-        </div>
-
-        <div class="col-md-3">
-            <label for="categoryId" class="form-label">Category</label>
-            <select class="form-select" id="categoryId" name="categoryId">
-                <option value="">All</option>
-                @foreach (var cat in categories)
-                {
-                    <option value="@cat.CategoryId" selected="@(categoryId == cat.CategoryId.ToString() ? "selected" : null)">
-                        @cat.CategoryName
-                    </option>
-                }
-            </select>
-        </div>
-
-        <div class="col-md-3">
-            <label for="selectedPriceRange" class="form-label">Unit Price</label>
-            <select class="form-select" id="selectedPriceRange" name="selectedPriceRange">
-                <option value="">All</option>
-                @foreach (var range in unitPriceRanges)
-                {
-                    <option value="@range" selected="@(selectedPriceRange == range ? "selected" : null)">
-                        @range
-                    </option>
-                }
-            </select>
-        </div>
-
-        <div class="col-md-3">
-            <label for="selectedStockRange" class="form-label">Stock Quantity</label>
-            <select class="form-select" id="selectedStockRange" name="selectedStockRange">
-                <option value="">All</option>
-                @foreach (var range in stockQuantityRanges)
-                {
-                    <option value="@range" selected="@(selectedStockRange == range ? "selected" : null)">
-                        @range
-                    </option>
-                }
-            </select>
-        </div>
-
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary flex-fill">Filter</button>
-            <a href="@Url.Action("Index", "Product")" class="btn btn-secondary flex-fill">Reset</a>
-        </div>
-
-    </form>
-
+<form id="order-form" method="post">
+    <div class="mb-3">
+        <label for="CustomerName" class="form-label">Customer Name</label>
+        <input id="CustomerName" name="CustomerName" class="form-control" />
+    </div>
 
     <div class="mb-3">
-        <a class="btn btn-success" asp-action="Create">+ Add New</a>
+        <label for="OrderDate" class="form-label">Order Date</label>
+        <input id="OrderDate" name="OrderDate" type="date" class="form-control" />
     </div>
 
-    <table class="table table-bordered table-hover">
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label for="barcodeInput" class="form-label">Scan Barcode</label>
+            <input type="text" id="barcodeInput" class="form-control" placeholder="Enter or scan barcode" autofocus />
+        </div>
+
+        <div class="col-md-4">
+            <label for="productSelect" class="form-label">Select Product</label>
+            <select id="productSelect" class="form-select">
+                <option value="">-- Select Product --</option>
+                @foreach (var p in products)
+                {
+                    <option value="@p.ProductId" data-name="@p.ProductName" data-price="@p.UnitPrice" data-barcode="@p.Barcode">
+                        @p.ProductName
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label for="quantityInput" class="form-label">Quantity</label>
+            <input type="number" id="quantityInput" class="form-control" min="1" value="1" />
+        </div>
+
+        <div class="col-md-2 d-grid">
+            <label class="form-label invisible">Add</label>
+            <button type="button" class="btn btn-primary" onclick="addProduct()">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+    </div>
+
+    <h4>Order Items</h4>
+    <table class="table table-bordered" id="orderTable">
         <thead class="table-light">
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Barcode</th>
-                <th>Unit Price</th>
-                <th>Stock</th>
-                <th>Actions</th>
+                <th>Product</th>
+                <th style="width: 120px;">Qty</th>
+                <th style="width: 150px;">Unit Price</th>
+                <th style="width: 80px;"></th>
             </tr>
         </thead>
-        <tbody>
-            @if (Model.Any())
-            {
-                foreach (var p in Model)
-                {
-                    <tr>
-                        <td>@p.ProductId</td>
-                        <td>@p.ProductName</td>
-                        <td>@p.BarcodeValue</td>
-                        <td>@p.UnitPrice.ToString("C")</td>
-                        <td>@p.UnitsInStock</td>
-                        <td>
-                            <a asp-action="Details" asp-route-id="@p.ProductId" class="btn btn-sm btn-info">View</a>
-                            <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button"
-                                    class="btn btn-sm btn-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal"
-                                    data-product-id="@p.ProductId"
-                                    data-product-name="@p.ProductName">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="5" class="text-center">No products found.</td>
-                </tr>
-            }
-        </tbody>
+        <tbody id="order-items"></tbody>
     </table>
 
-    <!-- Pagination -->
-    <nav>
-        <ul class="pagination justify-content-center">
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                <li class="page-item @(i == page ? "active" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.CurrentSearch">@i</a>
-                </li>
-            }
-        </ul>
-    </nav>
-</div>
+    <div class="mt-4 d-flex gap-3">
+        <button type="submit" name="isBanking" value="true" class="btn btn-success">
+            <i class="fas fa-qrcode"></i> Pay with QR
+        </button>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <form method="post" asp-action="DeleteConfirmed">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete <strong id="productNameToDelete"></strong>?</p>
-                    <input type="hidden" id="productIdToDelete" name="ProductId" />
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </form>
+        <button type="submit" name="isBanking" value="false" class="btn btn-secondary">
+            <i class="fas fa-receipt"></i> Create Order Only
+        </button>
     </div>
-</div>
+</form>
 
 @section Scripts {
     <script>
-        const deleteModal = document.getElementById('deleteModal');
-        deleteModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const productId = button.getAttribute('data-product-id');
-            const productName = button.getAttribute('data-product-name');
+        const barcodeInput = document.getElementById("barcodeInput");
+        const productSelect = document.getElementById("productSelect");
+        const quantityInput = document.getElementById("quantityInput");
+        const orderItems = document.getElementById("order-items");
 
-            const productNameSpan = document.getElementById('productNameToDelete');
-            const productIdInput = document.getElementById('productIdToDelete');
+        // Add product to table
+        function addProduct() {
+            const productId = productSelect.value;
+            if (!productId || parseInt(quantityInput.value) < 1) return;
 
-            productNameSpan.textContent = productName;
-            productIdInput.value = productId;
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const productName = selectedOption.text;
+            const unitPrice = parseFloat(selectedOption.dataset.price || 0);
+            const quantity = parseInt(quantityInput.value);
+
+            const index = orderItems.children.length;
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>
+                    <input type="hidden" name="Items[${index}].ProductId" value="${productId}" />
+                    ${productName}
+                </td>
+                <td>
+                    <input type="number" name="Items[${index}].Quantity" value="${quantity}" class="form-control" />
+                </td>
+                <td>
+                    <input type="number" name="Items[${index}].UnitPrice" value="${unitPrice}" class="form-control" step="0.01" />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger remove-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            orderItems.appendChild(row);
+
+            // reset input
+            productSelect.value = "";
+            quantityInput.value = 1;
+            barcodeInput.value = "";
+            barcodeInput.focus();
+        }
+
+        // Remove row using event delegation
+        orderItems.addEventListener("click", function (e) {
+            if (e.target.closest(".remove-btn")) {
+                e.target.closest("tr").remove();
+            }
+        });
+
+        // Auto-select product by barcode
+        barcodeInput.addEventListener("input", () => {
+            const barcode = barcodeInput.value.trim();
+            const options = productSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].dataset.barcode === barcode) {
+                    productSelect.selectedIndex = i;
+                    break;
+                }
+            }
         });
     </script>
 }

@@ -46,6 +46,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Bind strongly typed config
 builder.Services.Configure<ApiSettings>(builder.Configuration);
+builder.Services.Configure<PayOSSettings>(builder.Configuration.GetSection("PayOS"));
 
 // Register AutoMapper with mapping profile
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -68,6 +69,7 @@ builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<GoogleDriveService>();
 builder.Services.AddScoped<GoogleAccessTokenService>();
 builder.Services.AddScoped<SeedManager>();
+builder.Services.AddScoped<PayOSService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Register Repositories

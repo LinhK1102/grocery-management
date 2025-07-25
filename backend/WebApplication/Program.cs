@@ -10,6 +10,8 @@ using GroceryWebApp.Service;
 using GroceryWebApp.Services;
 using Microsoft.AspNetCore.Authentication;
 using Utility.Common;
+using Utility.Hubs;
+using GroceryWebApp.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,8 @@ Console.WriteLine($"Login app via: http://{localIp}:5101 OR http://localhost:510
 // Add services to the container
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+builder.Services.AddLogging();
+
 // Get IP LAN (IPv4)
 var lanIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?.ToString();
 var apiBase = $"http://{lanIp}:5100/"; // ✅ Sử dụng IP thật
@@ -39,8 +43,6 @@ builder.Services.AddHttpClient("API", client =>
 {
     client.BaseAddress = new Uri(apiBase);
 });
-
-
 
 builder.Services.AddHttpContextAccessor();
 
@@ -63,14 +65,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                 context.RejectPrincipal();
                 await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             }
-            else
-            {
-                Console.WriteLine($"Token valid: {token.Substring(0, 50)}...");
-            }
         };
 
     });
-
 
 builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
 {
@@ -97,7 +94,6 @@ builder.Services.AddControllers()
         };
     });
 
-
 builder.Services.AddScoped<ApiClientService>();
 builder.Services.AddScoped<AuthApiService>();
 builder.Services.AddScoped<BarcodeApiService>();
@@ -112,8 +108,8 @@ builder.Services.AddScoped<WarehouseApiService>();
 builder.Services.AddScoped<CategoryApiService>();
 builder.Services.AddScoped<InvoiceApiService>();
 builder.Services.AddScoped<InvoiceItemApiService>();
+builder.Services.AddScoped<PaymentService>();
 // ... các service khác
-
 
 var app = builder.Build();
 
@@ -124,14 +120,19 @@ if (!app.Environment.IsDevelopment())
     //app.UseHsts();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Đặt đúng thứ tự: UseRouting -> UseAuthentication/Authorization -> MapControllers
 app.UseRouting();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/notificationHub");
+app.MapControllers(); 
 
 app.MapControllerRoute(
     name: "default",
@@ -144,7 +145,6 @@ app.MapGet("/", context =>
     context.Response.Redirect("/login");
     return Task.CompletedTask;
 });
-
 
 app.Run();
 

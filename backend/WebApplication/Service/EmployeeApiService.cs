@@ -60,11 +60,12 @@ namespace GroceryWebApp.Services
             return res.IsSuccessStatusCode;
         }
 
-        public async Task<List<EmployeeDto>> GetTopSellersAsync()
+        public async Task<EmployeeDto> SearchByEmailName(string email)
         {
-            var res = await CreateClient().GetAsync(ApiRoutes.Employee.TopSellers);
-            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<List<EmployeeDto>>(res);
-            return apiResponse.Data ?? new();
+            var url = string.Format(ApiRoutes.Employee.SearchName, email);
+            var res = await CreateClient().GetAsync(url);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<EmployeeDto>(res);
+            return apiResponse.Data;
         }
     }
 
