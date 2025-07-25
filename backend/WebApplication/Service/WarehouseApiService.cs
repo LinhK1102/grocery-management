@@ -50,5 +50,14 @@ namespace GroceryWebApp.Services
             var res = await CreateClient().DeleteAsync(url);
             return res.IsSuccessStatusCode;
         }
+
+        public async Task<WarehouseDto?> SearchWarehouseName(string warehouseName)
+        {
+            var url = string.Format(ApiRoutes.Warehouse.Search, warehouseName);
+            var res = await CreateClient().GetAsync(url);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<WarehouseDto>(res);
+            return apiResponse.Data;
+        }
+
     }
 }

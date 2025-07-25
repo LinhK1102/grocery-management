@@ -65,5 +65,14 @@ namespace GroceryWebApp.Services
             return await NotifyAndReturnAsync(res, $"✅ Supplier '{id}' deleted", $"❌ Failed to update supplier '{id}'");
         }
 
+        public async Task<SupplierDto?> SearchByName(string supplierName)
+        {
+            var url = string.Format(ApiRoutes.Suppliers.Search, supplierName);
+            var res = await CreateClient().GetAsync(url);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<SupplierDto>(res);
+            return apiResponse.Data;
+            //return await NotifyAndReturnAsync(res, $"✅ Supplier search '{supplierName}' ", $"❌ Failed to search supplier '{supplierName}'");
+        }
+
     }
 }

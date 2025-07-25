@@ -13,6 +13,7 @@ using ProductUpdateDto = GroceryWebApp.Models.Dto.ProductUpdateDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OData.Query;
 using static GroceryWebApp.Constants.ApiRoutes;
+using BusinessObjects.Commons;
 
 namespace GroceryAPI.Controllers
 {
@@ -62,7 +63,12 @@ namespace GroceryAPI.Controllers
                 ExpiryDuration = product.ExpiryDuration
             }).ToList();
 
-            return Ok(SystemStatus.Success(productDtos, "Products retrieved"));
+            var response = new PagedResult<ProductDto>
+            {
+                TotalItems = total,
+                Items = productDtos
+            };
+            return Ok(SystemStatus.Success(response, "Products retrieved"));
         }
 
 
@@ -76,10 +82,20 @@ namespace GroceryAPI.Controllers
         }
 
         [HttpPost("create")]
-        public IActionResult CreateProduct([FromBody] BusinessObjects.Entities.Product product)
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequestDto dto)
         {
-            _repo.AddProduct(product);
-            return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId },
+            var product = new BusinessObjects.Entities.Product
+            {
+                ProductName = dto.ProductName,
+                CategoryId = dto.CategoryId,
+                SupplierId = dto.SupplierId,
+                UnitsInStock = dto.UnitsInStock,
+                UnitPrice = dto.UnitPrice,
+                BarcodeValue = dto.BarcodeValue,
+                ExpiryDuration = dto.ExpiryDuration
+            };
+            var saved = await _repo.AddProduct(product);
+            return CreatedAtAction(nameof(GetProductById), new { id = saved.ProductId },
                 SystemStatus.Success(product, "Product created successfully."));
         }
 

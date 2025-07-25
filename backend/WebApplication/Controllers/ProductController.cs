@@ -8,6 +8,8 @@ using static GroceryWebApp.Constants.SystemMessages;
 using Utility.Common;
 using static GroceryWebApp.Constants.ApiRoutes;
 using System.Drawing.Printing;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using BusinessObjects.Commons;
 
 namespace GroceryWebApp.Controllers;
 public class ProductController : Controller
@@ -15,12 +17,15 @@ public class ProductController : Controller
     private readonly ProductApiService _productApiService;
     private readonly CategoryApiService _categoryApiService;
     private readonly SupplierApiService _supplierApiService;
+    private readonly WarehouseApiService _warehouseApiService;
 
-    public ProductController(ProductApiService productApiService, CategoryApiService categoryApiService, SupplierApiService supplierApiService)
+    public ProductController(ProductApiService productApiService, CategoryApiService categoryApiService, 
+        SupplierApiService supplierApiService, WarehouseApiService warehouseApiService)
     {
         _productApiService = productApiService;
         _categoryApiService = categoryApiService;
         _supplierApiService = supplierApiService;
+        _warehouseApiService = warehouseApiService;
     }
 
     public async Task<IActionResult> Index(
@@ -31,6 +36,7 @@ public class ProductController : Controller
         (int? minPrice, int? maxPrice) = ParseRange(selectedPriceRange);
         (int? minStock, int? maxStock) = ParseRange(selectedStockRange);
 
+        
         List<ProductDto> products;
         int total;
 
@@ -38,9 +44,10 @@ public class ProductController : Controller
             string.IsNullOrEmpty(selectedPriceRange) && string.IsNullOrEmpty(selectedStockRange))
         {
             // Không có search gì cả → gọi GetAllAsync
-            products = await _productApiService.GetAllAsync("", page, pageSize);
-            total = products.Count(); // Hoặc nếu API trả về total thì bạn dùng luôn
+            PagedResult<ProductDto> dto = await _productApiService.GetAllAsync("", page, pageSize);
+            total = dto.TotalItems; // Hoặc nếu API trả về total thì bạn dùng luôn
             ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
+            products = dto.Items;
         }
         else
         {
@@ -120,20 +127,54 @@ public class ProductController : Controller
         return View(product);
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+         await LoadDropdownDataToViewBag();
+
         return View();
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(ProductUpdateDto dto)
+    public async Task<IActionResult> Create(CreateProductRequestDto dto)
     {
+        //// Loại bỏ các lỗi validate cho các trường này
+        //ModelState.Remove(nameof(dto.Category));
+        //ModelState.Remove(nameof(dto.Supplier));
+        //ModelState.Remove(nameof(dto.OrderDetail));
+
         if (!ModelState.IsValid) return View(dto);
+
+        var category    = await _categoryApiService.GetOrCreate(UtitlityConstant.Category_Default_Name);
+        var supplier    = await _supplierApiService.SearchByName(UtitlityConstant.Supplier_Default_Name);
+        var warehouse   = await _warehouseApiService.SearchWarehouseName(UtitlityConstant.Warehouse_Default_Name);
+        
+        //ProductDtoExtensions.FillDefaults(dto,category, supplier, warehouse);
+
         var result = await _productApiService.CreateAsync(dto);
         if (result)
             return RedirectToAction("Index");
+
         ModelState.AddModelError("", "Failed to create product.");
+
+        await LoadDropdownDataToViewBag();
         return View(dto);
+    }
+    private async Task LoadDropdownDataToViewBag()
+    {
+        var categories = await _categoryApiService.GetAllAsync();
+        var suppliers = await _supplierApiService.GetAllAsync();
+
+        ViewBag.Categories = categories.Select(c => new SelectListItem
+        {
+            Value = c.CategoryId.ToString(),
+            Text = c.CategoryName
+        }).ToList();
+
+        ViewBag.Suppliers = suppliers.Select(s => new SelectListItem
+        {
+            Value = s.SupplierId.ToString(),
+            Text = s.SupplierName
+        }).ToList();
     }
 
     public async Task<IActionResult> Edit(int id)
@@ -196,11 +237,11 @@ public class ProductController : Controller
         var suppliers = await _supplierApiService.GetAllAsync();
 
         ViewBag.CategoryJson = JsonSerializer.Serialize(
-            categories.Select(c => new { id = c.CategoryId, text = c.CategoryName })
+            categories.Select(c => new SimpleItem { Id = c.CategoryId, Text = c.CategoryName })
         );
 
         ViewBag.SupplierJson = JsonSerializer.Serialize(
-            suppliers.Select(s => new { id = s.SupplierId, text = s.SupplierName })
+            suppliers.Select(s => new SimpleItem{ Id = s.SupplierId, Text = s.SupplierName })
         );
 
         if (dto != null)
@@ -226,4 +267,5 @@ public class ProductController : Controller
         var result = await _productApiService.DeleteAsync(id);
         return RedirectToAction("Index");
     }
+
 }

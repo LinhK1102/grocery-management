@@ -6,6 +6,7 @@ using Utility.Hubs;
 using GroceryWebApp.Constants;
 using GroceryWebApp.Models;
 using GroceryWebApp.Models.Dto;
+using System.Net.Http.Json;
 
 namespace GroceryWebApp.Service
 {
@@ -41,6 +42,14 @@ namespace GroceryWebApp.Service
             return res.IsSuccessStatusCode;
         }
 
+        public async Task<CategoryDto?> GetOrCreate(string categoryName)
+        {
+            var url = string.Format(ApiRoutes.Category.GetOrCreate, categoryName);
+            var res = await CreateClient().PostAsync(url,null);
+            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<CategoryDto>(res);
 
+            // Fix: Access the 'Data' property of 'ApiResponse<CategoryDto>' to retrieve the actual 'CategoryDto' object.
+            return apiResponse?.Data ?? new CategoryDto();
+        }
     }
 }

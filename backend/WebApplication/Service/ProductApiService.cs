@@ -18,21 +18,35 @@ namespace GroceryWebApp.Services
         public ProductApiService(IHttpClientFactory factory, IHttpContextAccessor accessor, IConfiguration config, IHubContext<NotificationHub> hubContext)
             : base(factory, accessor, config, hubContext) { }
 
-        public async Task<List<ProductDto>> GetAllAsync(string search = "", int page = 1, int pageSize = 10)
+        public async Task<PagedResult<ProductDto>> GetAllAsync(string search = "", int page = 1, int pageSize = 10)
         {
             var client = CreateClient();
             var url = $"{ApiRoutes.Product.GetAll}?search={search}&page={page}&pageSize={pageSize}";
             var res = await client.GetAsync(url);
 
-            var products = await JsonUtility.DeserializeWrappedListAsync<ProductDto>(res);
-            return products;
+            var json = await res.Content.ReadAsStringAsync();
+            if (!res.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"ERROR: {(int)res.StatusCode} - {res.ReasonPhrase}");
+                Console.WriteLine("BODY:");
+                //Console.WriteLine(json);
+            }
+            else
+            {
+                Console.WriteLine("RESPONSE:");
+                //Console.WriteLine(json);
+            }
+
+            // Dùng ApiResponse<ProductDto> vì "data" là 1 object
+            var apiResponse = await JsonUtility.DeserializePagedResultAsync<ProductDto>(res);
+            return apiResponse.Data ?? new PagedResult<ProductDto>();
         }
 
         public async Task<(List<ProductDto> products, int total)> GetODataFilteredAsync(
             string name, string barcode, int? categoryId,
             int? minPrice, int? maxPrice, int? minStock, int? maxStock,
             int page, int pageSize)
-        
+
         {
             var client = CreateClient();
             var filters = new List<string>();
@@ -81,19 +95,38 @@ namespace GroceryWebApp.Services
             var url = string.Format(ApiRoutes.Product.GetById, id);
             var res = await client.GetAsync(url);
 
-            var json = await res.Content.ReadAsStringAsync();
-            Console.WriteLine(json); // kiểm tra đầu vào
-
             // Dùng ApiResponse<ProductDto> vì "data" là 1 object
             var product = await JsonUtility.DeserializeApiResponseAsyncObj<ProductDetailDto>(res);
             return product;
         }
 
 
-        public async Task<bool> CreateAsync(ProductUpdateDto product)
+        public async Task<bool> CreateAsync(CreateProductRequestDto product)
         {
             var client = CreateClient();
+
+            // 🔍 Serialize product thành JSON string
+            var jsonBody = JsonSerializer.Serialize(product, new JsonSerializerOptions
+            {
+                WriteIndented = true, // dễ đọc hơn
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            });
+
+            // 📝 Log ra console hoặc file tùy bạn
+            Console.WriteLine("=== JSON SENT ===");
+            Console.WriteLine(jsonBody);
+
             var res = await client.PostAsJsonAsync(ApiRoutes.Product.Create, product);
+
+            var json = await res.Content.ReadAsStringAsync();
+            if (!res.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"ERROR: {(int)res.StatusCode} - {res.ReasonPhrase}");
+                Console.WriteLine("BODY:");
+                Console.WriteLine(json);
+            }
+
             return res.IsSuccessStatusCode;
         }
 
@@ -183,7 +216,7 @@ namespace GroceryWebApp.Services
 
         public async Task<bool> CreateMultipleItemsAsync(List<ItemCreateDto> items)
         {
-            var client = CreateClient(); 
+            var client = CreateClient();
             var response = await client.PostAsJsonAsync(ApiRoutes.Item.CreateMultiple, items);
 
             if (!response.IsSuccessStatusCode)

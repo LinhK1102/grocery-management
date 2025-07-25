@@ -56,5 +56,14 @@ namespace GroceryAPI.Controllers
             _repo.DeleteWarehouse(id);
             return Ok(SystemStatus.Success($"Warehouse with ID {id} deleted successfully."));
         }
+
+        [HttpGet("search/{warehouseName}")]
+        public IActionResult SearchWarehouseByName(string warehouseName)
+        {
+            var warehouse = _repo.GetWarehouseByName(warehouseName);
+            return warehouse == null
+                ? NotFound(SystemStatus.Fail($"Warehouse with Name '{warehouseName}' not found."))
+                : Ok(SystemStatus.Success(warehouse, "Warehouse found."));
+        }
     }
 }

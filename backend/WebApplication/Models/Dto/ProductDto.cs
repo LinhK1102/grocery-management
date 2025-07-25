@@ -15,9 +15,11 @@ namespace GroceryWebApp.Models.Dto
         public string ProductName { get; set; }
 
         [JsonPropertyName("categoryId")]
+        [Required(ErrorMessage = "Category is required.")]
         public int CategoryId { get; set; }
 
         [JsonPropertyName("supplierId")]
+        [Required(ErrorMessage = "Supplier is required.")]
         public int SupplierId { get; set; }
 
         [JsonPropertyName("unitsInStock")]
@@ -46,12 +48,40 @@ namespace GroceryWebApp.Models.Dto
         [JsonIgnore]
         public CategoryDto Category { get; set; }
 
-        [JsonIgnore]
+        [JsonIgnore]    
         public SupplierDto Supplier { get; set; }
         [JsonIgnore]
         public OrderDetailDto OrderDetail { get; set; }
 
         [JsonIgnore]
         public ICollection<ProductWarehouseDto> ProductWarehouses { get; set; } = new List<ProductWarehouseDto>();
+    }
+
+    public class CreateProductRequestDto
+    {
+        [JsonPropertyName("productName")]
+        [Required(ErrorMessage = "Product name is required.")]
+        public string ProductName { get; set; }
+
+        [JsonPropertyName("categoryId")]
+        [Required(ErrorMessage = "Category is required.")]
+        public int CategoryId { get; set; }
+
+        [JsonPropertyName("supplierId")]
+        [Required(ErrorMessage = "Supplier is required.")]
+        public int SupplierId { get; set; }
+
+        [JsonPropertyName("unitsInStock")]
+        public int UnitsInStock { get; set; }
+
+        [JsonPropertyName("unitPrice")]
+        public decimal UnitPrice { get; set; }
+
+        [JsonPropertyName("barcodeValue")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Barcode must contain digits only.")]
+        public string BarcodeValue { get; set; }
+
+        [JsonPropertyName("expiryDuration")]
+        public DateTime ExpiryDuration { get; set; }
     }
 }

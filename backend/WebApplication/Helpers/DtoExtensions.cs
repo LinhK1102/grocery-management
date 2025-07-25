@@ -1,4 +1,5 @@
 ﻿using GroceryWebApp.Models.Dto;
+using Utility.Common;
 
 namespace GroceryWebApp.Helpers
 {
@@ -106,6 +107,43 @@ namespace GroceryWebApp.Helpers
                 Items = detail.Items,
                 OrderDetails = detail.OrderDetails
             };
+        }
+    }
+    public static class ProductDtoExtensions
+    {
+        public static void FillDefaults(this ProductDto dto,CategoryDto category, SupplierDto supplier, WarehouseDto warehouse)
+        {
+            if (string.IsNullOrWhiteSpace(dto.ProductName))
+                dto.ProductName = UtitlityConstant.Product_Default_Name;
+
+            if (dto.CategoryId <= 0)
+            {
+                dto.Category = category;
+                dto.CategoryId = category.CategoryId;
+            }
+
+            if (dto.SupplierId <= 0)
+            {
+                dto.SupplierId = supplier.SupplierId;
+                dto.Supplier = supplier;
+            }
+
+            if (dto.ProductWarehouses == null)
+                dto.ProductWarehouses = null;
+
+                dto.Items ??= new List<ItemDto>();
+            dto.OrderDetails ??= new List<OrderDetailDto>();
+
+            if (dto.ExpiryDuration == default)
+                dto.ExpiryDuration = DateTime.UtcNow.AddMonths(6);
+
+            if (string.IsNullOrWhiteSpace(dto.BarcodeValue))
+                dto.BarcodeValue = GenerateFakeBarcode();
+        }
+
+        private static string GenerateFakeBarcode()
+        {
+            return DateTime.UtcNow.Ticks.ToString();
         }
     }
 }

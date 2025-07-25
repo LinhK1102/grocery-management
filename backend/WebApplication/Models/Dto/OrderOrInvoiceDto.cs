@@ -5,7 +5,7 @@
         public string CustomerName { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public List<OrderItemDto> Items { get; set; } = new();
-        public bool IsPaid { get; set; }  // true => Invoice, false => Order
+        public bool IsBanking { get; set; }  // true => Invoice, false => Order
     }
 
     public class OrderItemDto

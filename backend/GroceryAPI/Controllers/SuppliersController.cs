@@ -3,6 +3,7 @@ using BusinessObjects.DTOs;
 using BusinessObjects.Entities;
 using GroceryAPI.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.SignalR;
 using Repositories.Interfaces;
 using Utility.Common;
@@ -81,5 +82,15 @@ namespace GroceryAPI.Controllers
                 ? Ok(SystemStatus.Success($"Supplier with ID {id} deleted successfully."))
                 : BadRequest(SystemStatus.Fail("Cannot delete supplier with existing dependencies."));
         }
+        [EnableQuery]
+        [HttpGet("search/{supplierName}")]
+        public IActionResult Search(string supplierName)
+        {
+            var supplier = _supplierRepository.GetSupplierByName(supplierName);
+            return supplier == null
+                ? NotFound(SystemStatus.Fail($"Supplier with supplier name: {supplierName} not found."))
+                : Ok(SystemStatus.Success(supplier, "Supplier found."));
+        }
+
     }
 }

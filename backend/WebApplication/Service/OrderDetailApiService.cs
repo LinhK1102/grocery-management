@@ -19,8 +19,8 @@ namespace GroceryWebApp.Services
         {
             var url = string.Format(ApiRoutes.OrderDetails.GetByOrderId, orderId);
             var res = await CreateClient().GetAsync(url);
-            var apiResponse = await JsonUtility.DeserializeApiResponseAsync<List<OrderDetailDto>>(res);
-            return apiResponse.Data ?? new();
+            var apiResponse = await JsonUtility.DeserializeWrappedListAsync<OrderDetailDto>(res);
+            return apiResponse;
         }
 
         public async Task<bool> CreateAsync(OrderDetailDto dto)

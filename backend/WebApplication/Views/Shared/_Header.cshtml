@@ -33,11 +33,6 @@
             <ul class="dropdown-menu dropdown-menu-end text-small" aria-labelledby="dropdownUser">
                 @if (User.Identity?.IsAuthenticated ?? false)
                 {
-                    <li>
-                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
-                            <i class="bi bi-person-circle me-2"></i> Profile
-                        </a>
-                    </li>
                     <li><hr class="dropdown-divider" /></li>
                     <li>
                         <a class="dropdown-item" asp-controller="Account" asp-action="Logout">

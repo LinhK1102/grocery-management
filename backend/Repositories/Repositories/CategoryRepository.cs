@@ -22,7 +22,7 @@ namespace Repositories.Repositories
         public Category GetOrCreateByName(string name)
         {
             var existing = _categoryDAO.GetCategoryByName(name.ToUpper());
-            if (existing != null) return null;
+            if (existing != null) return existing;
 
             var newCategory = _categoryDAO.AddCategory(new Category { CategoryName = name.ToUpper() });
 

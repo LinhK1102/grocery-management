@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interfaces;
 using Repositories.Repositories;
+using Utility.Common;
 
 namespace GroceryAPI.Controllers
 {
@@ -32,7 +33,7 @@ namespace GroceryAPI.Controllers
             if (product == null)
                 return NotFound("Barcode not found and API has no result.");
 
-            return Ok(new {Status = "Barcode found.", lists = product});
+            return Ok(SystemStatus.Success(product, "Barcode found."));
         }
 
     }

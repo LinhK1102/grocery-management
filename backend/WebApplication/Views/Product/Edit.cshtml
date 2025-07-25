@@ -1,9 +1,19 @@
 ﻿@model GroceryWebApp.Models.Dto.ProductDto
+@using System.Text.Json
+@using GroceryWebApp.Models.Dto
+
 @{
-    ViewData["Title"] = "Edit Product";
-    var categoryJson = ViewBag.CategoryJson;
-    var supplierJson = ViewBag.SupplierJson;
+    var categories = JsonSerializer.Deserialize<List<SimpleItem>>(ViewBag.CategoryJson ?? "[]");
+    var suppliers = JsonSerializer.Deserialize<List<SimpleItem>>(ViewBag.SupplierJson ?? "[]");
 }
+
+@* @foreach (var sup in suppliers) *@
+@* { *@
+@*     <div> *@
+@*         ID: @sup.Id | *@
+@*         TEXT: "@sup.Text" *@
+@*     </div> *@
+@* } *@
 
 <div class="container mt-4">
     <div class="bg-white rounded-4 shadow-lg p-4">
@@ -65,27 +75,46 @@
                 <div class="row g-3 card-body">
                     <div class="col-md-6">
                         <label asp-for="CategoryId" class="form-label">Category</label>
-                        <select id="CategoryId" asp-for="CategoryId" class="form-select select-category">
+                        <select id="CategoryId" name="CategoryId" class="form-select select-category">
                             <option value="">-- Select Category --</option>
-                            @if (Model.CategoryId > 0 && Model.Category != null)
+                            @foreach (var cat in categories)
                             {
-                                <option selected value="@Model.CategoryId">@Model.Category.CategoryName</option>
+                                if (Model.CategoryId == cat.Id)
+                                {
+                                    <option value="@cat.Id" selected>@cat.Text 1</option>
+                                }
+                                else
+                                {
+                                    <option value="@cat.Id">@cat.Text 2</option>
+                                }
                             }
+
                         </select>
                         <span asp-validation-for="CategoryId" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label asp-for="SupplierId" class="form-label">Supplier</label>
-                        <select id="SupplierId" asp-for="SupplierId" class="form-select select-supplier">
+                        <select id="SupplierId" name="SupplierId" class="form-select select-supplier">
                             <option value="">-- Select Supplier --</option>
-                            @if (Model.SupplierId > 0 && Model.Supplier != null)
+                            @foreach (var sup in suppliers)
                             {
-                                <option selected value="@Model.SupplierId">@Model.Supplier.SupplierName</option>
+                                if (Model.SupplierId == sup.Id)
+                                {
+                                    <option value="@sup.Id" selected>@sup.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@sup.Id">@sup.Text</option>
+                                }
                             }
+
+
                         </select>
                         <span asp-validation-for="SupplierId" class="text-danger"></span>
                     </div>
+
+
                 </div>
             </div>
 
@@ -101,59 +130,59 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-                $(document).ready(function () {
-            const categories = @Html.Raw(ViewBag.CategoryJson ?? "[]");
-            const suppliers = @Html.Raw(ViewBag.SupplierJson ?? "[]");
+        //         $(document).ready(function () {
+        //     const categories = @Html.Raw(ViewBag.CategoryJson ?? "[]");
+        //     const suppliers = @Html.Raw(ViewBag.SupplierJson ?? "[]");
 
-            const categoryId = parseInt('@Model.CategoryId');
-            const supplierId = parseInt('@Model.SupplierId');
-
-
-            const $category = $('.select-category');
-            const $supplier = $('.select-supplier');
+        //     const categoryId = parseInt('@Model.CategoryId');
+        //     const supplierId = parseInt('@Model.SupplierId');
 
 
-            console.log("Categories:", categories.forEach(c => console.log(c))); // nên in ra array
-            console.log("Suppliers:", suppliers.forEach(s => console.log(s)));
+        //     const $category = $('.select-category');
+        //     const $supplier = $('.select-supplier');
 
-            $category.select2({
-                data: categories,
-                width: '100%',
-                placeholder: 'Select category',
-                allowClear: true
-            });
 
-            if (categoryId) {
-                if (!$category.find('option[value="' + categoryId + '"]').length) {
-                    const selectedCat = categories.find(x => x.id == categoryId);
-                    if (selectedCat) {
-                        const newOption = new Option(selectedCat.text, selectedCat.id, true, true);
-                        $category.append(newOption).trigger('change');
-                    }
-                } else {
-                    $category.val(categoryId).trigger('change');
-                }
-            }
+        //     console.log("Categories:", categories.forEach(c => console.log(c))); nên in ra array
+        //     console.log("Suppliers:", suppliers.forEach(s => console.log(s)));
 
-            $supplier.select2({
-                data: suppliers,
-                width: '100%',
-                placeholder: 'Select supplier',
-                allowClear: true
-            });
+        //     $category.select2({
+        //         data: categories,
+        //         width: '100%',
+        //         placeholder: 'Select category',
+        //         allowClear: true
+        //     });
 
-            if (supplierId) {
-                if (!$supplier.find('option[value="' + supplierId + '"]').length) {
-                    const selectedSup = suppliers.find(x => x.id == supplierId);
-                    if (selectedSup) {
-                        const newOption = new Option(selectedSup.text, selectedSup.id, true, true);
-                        $supplier.append(newOption).trigger('change');
-                    }
-                } else {
-                    $supplier.val(supplierId).trigger('change');
-                }
-            }
-        });
+        //     if (categoryId) {
+        //         if (!$category.find('option[value="' + categoryId + '"]').length) {
+        //             const selectedCat = categories.find(x => x.id == categoryId);
+        //             if (selectedCat) {
+        //                 const newOption = new Option(selectedCat.text, selectedCat.id, true, true);
+        //                 $category.append(newOption).trigger('change');
+        //             }
+        //         } else {
+        //             $category.val(categoryId).trigger('change');
+        //         }
+        //     }
+
+        //     $supplier.select2({
+        //         data: suppliers,
+        //         width: '100%',
+        //         placeholder: 'Select supplier',
+        //         allowClear: true
+        //     });
+
+        //     if (supplierId) {
+        //         if (!$supplier.find('option[value="' + supplierId + '"]').length) {
+        //             const selectedSup = suppliers.find(x => x.id == supplierId);
+        //             if (selectedSup) {
+        //                 const newOption = new Option(selectedSup.text, selectedSup.id, true, true);
+        //                 $supplier.append(newOption).trigger('change');
+        //             }
+        //         } else {
+        //             $supplier.val(supplierId).trigger('change');
+        //         }
+        //     }
+        // });
 
                 function changePrice(step) {
             const input = document.querySelector('input[name="UnitPrice"]');

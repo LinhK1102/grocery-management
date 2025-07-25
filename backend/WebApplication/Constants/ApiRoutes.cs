@@ -80,6 +80,7 @@
             public const string Create = "/api/suppliers/create";
             public const string Update = "/api/suppliers/update/{0}";
             public const string Delete = "/api/suppliers/delete/{0}";
+            public const string Search = "/api/suppliers/search/{0}";
         }
 
         public static class Warehouse
@@ -89,6 +90,7 @@
             public const string Create = "/api/warehouses/create";
             public const string Update = "/api/warehouses/update/{0}";
             public const string Delete = "/api/warehouses/delete/{0}";
+            public const string Search = "/api/warehouses/search/{0}"; 
         }
 
         public static class Category
@@ -97,6 +99,7 @@
             public const string GetById = "/api/categories/get-by-id/{0}";
             public const string Create = "/api/categories/create-or-get";
             public const string Update = "/api/categories/update/{id}";
+            public const string GetOrCreate = "/api/categories/create-or-get?categoryName={0}";
         }
 
         public static class Item

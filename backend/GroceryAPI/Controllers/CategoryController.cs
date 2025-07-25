@@ -3,6 +3,8 @@ using BusinessObjects.Entities;
 using Repositories.DTOs;
 using BusinessObjects.Commons;
 using Repositories.Interfaces;
+using GroceryWebApp.Models.Dto;
+using Utility.Common;
 
 namespace GroceryAPI.Controllers
 {
@@ -55,17 +57,22 @@ namespace GroceryAPI.Controllers
         // POST: api/categories/create-or-get
         // Automatically creates category if not exists (used by product creation)
         [HttpPost("create-or-get")]
-        public IActionResult CreateOrGet([FromBody] string categoryName)
+        public IActionResult CreateOrGet([FromQuery] string categoryName)
         {
             if (string.IsNullOrWhiteSpace(categoryName))
-                categoryName = "Undefined";
+                categoryName = UtitlityConstant.Category_Default_Name;
 
             var category = _categoryService.GetOrCreateByName(categoryName.Trim());
-            return Ok(new ApiResponse<Category>
+            var dto = new CategoryDto
+            {
+                CategoryId = category.CategoryId,
+                CategoryName = category.CategoryName
+            };
+            return Ok(new ApiResponse<CategoryDto>
             {
                 Success = true,
                 Message = "Category resolved",
-                Data = category
+                Data = dto
             });
         }
 

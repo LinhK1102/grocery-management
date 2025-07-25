@@ -7,208 +7,372 @@
     var products = ViewBag.Products as List<ProductDto> ?? new();
 }
 
-<div class="container mt-4">
-    <form asp-action="Create" method="post">
-        <div class="row align-items-center mb-3">
+<div class="container mt-5">
+    <form asp-action="Create" method="post" novalidate>
+        <!-- Header -->
+        <div class="row align-items-center mb-4">
             <div class="col-md-8">
-                <h2 class="fw-bold">@ViewData["Title"]</h2>
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>@ViewData["Title"]
+                </h2>
             </div>
             <div class="col-md-4 text-end">
+                <small class="text-muted">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    @Model.OrderDate.ToString("yyyy-MM-dd HH:mm")
+                </small>
                 <input asp-for="OrderDate" type="hidden" />
-                <p class="form-control-plaintext">@Model.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")</p>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <!-- QR Code Column -->
-            <div class="col-md-3">
-                <div class="qr-wrapper bg-light border rounded position-relative">
-                    <div id="qrcode" class="qr-inner"></div>
-                    <small class="text-muted position-absolute bottom-0 start-50 translate-middle-x mb-2">QR Code</small>
+        <!-- Main Two-Column Layout -->
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <!-- Customer Info -->
+                <div class="card shadow-sm mb-4 rounded-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-user me-2 text-muted"></i>Customer Information
+                        </h5>
+                        <div class="form-floating">
+                            <input asp-for="CustomerName" class="form-control" id="CustomerName" placeholder="Customer Name" value="Unknown" />
+                            <label for="CustomerName"><i class="fas fa-user-circle me-2 text-muted"></i>Customer Name</label>
+                            <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="card shadow-sm mb-4 rounded-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-credit-card me-2 text-muted"></i>Payment Method
+                        </h5>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="IsBanking" id="bankingTrue" value="true" />
+                            <label class="form-check-label" for="bankingTrue">
+                                <i class="fas fa-university me-1 text-primary"></i>QR Banking
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="IsBanking" id="bankingFalse" value="false" checked />
+                            <label class="form-check-label" for="bankingFalse">
+                                <i class="fas fa-money-bill-wave me-1 text-success"></i>Cash
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Customer and Payment Info -->
-            <div class="col-md-9">
-                <div class="mb-3">
-                    <label asp-for="CustomerName" class="form-label">Customer Name</label>
-                    <input asp-for="CustomerName" class="form-control" id="CustomerName" value="Unknown" />
-                    <span asp-validation-for="CustomerName" class="text-danger small"></span>
+            <!-- Right Column -->
+            <div class="col-md-6">
+                <!-- Product Search -->
+                <div class="card shadow-sm mb-4 rounded-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-search me-2 text-muted"></i>Search & Add Products
+                        </h5>
+                        <div class="position-relative">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Enter product name or barcode..." autocomplete="off" />
+                            <ul id="searchSuggestions" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></ul>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-check mb-2">
-                    <input asp-for="IsPaid" class="form-check-input" id="IsPaid" />
-                    <label asp-for="IsPaid" class="form-check-label">Generate Invoice</label>
-                </div>
-
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="IsBanking" />
-                    <label class="form-check-label" for="IsBanking">Use Banking Payment</label>
+                <!-- Order Items -->
+                <div class="card shadow-sm mb-4 rounded-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-shopping-cart me-2 text-muted"></i>Order Items
+                        </h5>
+                        <div id="item-container"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <hr />
-
-        <h5 class="mb-3">Search & Add Products</h5>
-        <div class="position-relative mb-3">
-            <input type="text" id="searchInput" class="form-control" placeholder="Search product by name or barcode..." autocomplete="off" />
-            <ul id="searchSuggestions" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></ul>
+        <!-- Footer Action Buttons -->
+        <div class="text-end mt-4">
+            <button type="submit" class="btn btn-success px-4 rounded-3">
+                <i class="fas fa-paper-plane me-1"></i>Submit Order
+            </button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2 px-4 rounded-3">
+                <i class="fas fa-times me-1"></i>Cancel
+            </a>
         </div>
-
-
-        <h5 class="mb-3">Order Items</h5>
-        <div id="item-container"></div>
-
-        <button type="submit" class="btn btn-success mt-3">Submit</button>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary ms-2 mt-3">Cancel</a>
     </form>
 </div>
 
+
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <script>
-        // ======== 1. Auto-fill CustomerName = "Unknown" nếu người dùng không nhập ========
-        const input = document.getElementById('CustomerName');
+                                                // ======== 1. Auto-fill CustomerName = "Unknown" nếu người dùng không nhập ========
+                                                const input = document.getElementById('CustomerName');
 
-        // Khi trang load: nếu chưa có giá trị thì set là "Unknown"
-        if (!input.value.trim()) {
-            input.value = 'Unknown';
-        }
+                                                // Khi trang load: nếu chưa có giá trị thì set là "Unknown"
+                                                if (!input.value.trim()) {
+                                                    input.value = 'Unknown';
+                                                }
 
-        // Khi người dùng blur (rời khỏi input), nếu rỗng thì set lại "Unknown"
-        input.addEventListener('blur', function () {
-            if (!this.value.trim()) {
-                this.value = 'Unknown';
-            }
-        });
+                                                // Khi người dùng blur (rời khỏi input), nếu rỗng thì set lại "Unknown"
+                                                input.addEventListener('blur', function () {
+                                                    if (!this.value.trim()) {
+                                                        this.value = 'Unknown';
+                                                    }
+                                                });
 
-        // Khi submit form: nếu rỗng thì gửi "Unknown"
-        document.querySelector('form').addEventListener('submit', function () {
-            if (!input.value.trim()) {
-                input.value = 'Unknown';
-            }
-        });
+                                                // Khi submit form: nếu rỗng thì gửi "Unknown"
+                                                document.querySelector('form').addEventListener('submit', function () {
+                                                    if (!input.value.trim()) {
+                                                        input.value = 'Unknown';
+                                                    }
+                                                });
 
-        // ======== 2. Convert ViewBag.Products thành JS object ========
-        const products = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                                                // ======== 2. Convert ViewBag.Products thành JS object ========
+                                                const products = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
         products,
         new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }
     ));
 
-        let index = @Model.Items.Count; // dùng để đánh chỉ số item
+                                                let index = @Model.Items.Count; // dùng để đánh chỉ số item
 
-        // ======== 3. Tạo mã QR ban đầu ========
-        const qrcodeElement = document.getElementById("qrcode");
-        const qrSize = qrcodeElement.offsetWidth || 150; // fallback nếu không có kích thước
-        const qr = new QRCode(qrcodeElement, {
-            text: "Default QR",
-            width: qrSize,
-            height: qrSize
-        });
+                                                // ======== 3. Tạo mã QR ban đầu ========
+                                                // const qrcodeElement = document.getElementById("qrcode");
+                                                // const qrSize = qrcodeElement.offsetWidth || 150; fallback nếu không có kích thước
+                                                // const qr = new QRCode(qrcodeElement, {
+                                                //     text: "Default QR",
+                                                //     width: qrSize,
+                                                //     height: qrSize
+                                                // });
 
-        // Khi tick checkbox Banking → thay đổi nội dung QR code
-        const bankingCheckbox = document.getElementById("IsBanking");
-        if (bankingCheckbox) {
-            bankingCheckbox.addEventListener("change", function () {
-                qr.clear();
-                if (this.checked) {
-                    qr.makeCode("Banking Payment - Order XYZ");
-                } else {
-                    qr.makeCode("Default QR");
-                }
-            });
-        }
+                                                // Khi tick checkbox Banking → thay đổi nội dung QR code
+                                            // document.addEventListener("DOMContentLoaded", function () {
+                                            //         const bankingCheckbox = document.getElementById("IsBanking");
 
-        // ======== 4. Thêm sản phẩm vào danh sách (theo index) ========
-        function addProductRow(product) {
+                                            //     bankingCheckbox.addEventListener("change", async function () {
+                                            //         const qrContainer = document.getElementById("qrcode");
+                                            //         qrContainer.innerHTML = "";
+
+                                            //         if (this.checked) {
+                                            //             const amount = 100000; Hoặc tính động theo order
+                                            //             const description = "Paid at GroceryWebApp";
+
+                                            //             const qrCodeBase64 = await requestQrFromServer(amount, description);
+
+                                            //             if (qrCodeBase64) {
+                                            //                     qrContainer.innerHTML = `<img src="@TempData["QrCode"]" alt="QR Code" class="img-fluid" />`;
+                                            //             } else {
+                                            //                 qrContainer.innerHTML = `<div class="text-danger">QR invalid</div>`;
+                                            //             }
+                                            //         } else {
+                                            //             qrContainer.innerHTML = `<div class="text-muted">Banking not selected</div>`;
+                                            //         }
+                                            //     });
+                                            // });
+
+
+
+                                                // ======== 4. Thêm sản phẩm vào danh sách (theo index) ========
+                                                                   function addProductRow(product) {
             const html = `
-            <div class="row mb-3 border-bottom pb-3">
-                <div class="col-md-5">
-                    <label class="form-label">Product</label>
-                    <input name="Items[${index}].ProductName" class="form-control" value="${product.productName}" readonly />
-                    <input type="hidden" name="Items[${index}].Barcode" value="${product.barcodeValue}" />
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Quantity</label>
-                    <input name="Items[${index}].Quantity" class="form-control" type="number" value="1" min="1" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Unit Price</label>
-                    <input name="Items[${index}].UnitPrice" class="form-control" value="${product.unitPrice}" readonly />
-                </div>
-            </div>`;
+                <div class="row mb-3 border-bottom pb-3 align-items-center order-item-row">
+                    <div class="col-md-5">
+                        <label class="form-label">
+                            <i class="fas fa-box me-1 text-muted"></i>Product
+                        </label>
+                        <input name="Items[${index}].ProductName" class="form-control rounded-3" value="${product.productName}" readonly />
+                        <input type="hidden" name="Items[${index}].Barcode" value="${product.barcodeValue}" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-sort-numeric-up me-1 text-muted"></i>Quantity
+                        </label>
+                        <input name="Items[${index}].Quantity" class="form-control rounded-3 text-end" type="number" value="1" min="1" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            <i class="fas fa-dollar-sign me-1 text-muted"></i>Unit Price
+                        </label>
+                        <input name="Items[${index}].UnitPrice" class="form-control rounded-3 text-end" value="${product.unitPrice}" readonly />
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <label class="form-label d-block">&nbsp;</label>
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-circle" onclick="removeProductRow(this)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>`;
             document.getElementById("item-container").insertAdjacentHTML("beforeend", html);
+                reindexItems();
             index++;
         }
 
-        // ======== 5. Xử lý gợi ý sản phẩm bằng dropdown khi nhập vào ô tìm kiếm ========
-        const searchInput = document.getElementById("searchInput");
-        const suggestionsBox = document.getElementById("searchSuggestions");
 
-        searchInput.addEventListener("input", function () {
-            const query = this.value.trim().toLowerCase();
-            suggestionsBox.innerHTML = "";
 
-            if (!query) {
-                suggestionsBox.style.display = "none";
-                return;
-            }
+                                                // ======== 5. Xử lý gợi ý sản phẩm bằng dropdown khi nhập vào ô tìm kiếm ========
+                                                const searchInput = document.getElementById("searchInput");
+                                                const suggestionsBox = document.getElementById("searchSuggestions");
 
-            // Tìm sản phẩm theo tên hoặc barcode (tối đa 5 gợi ý)
-            const matched = products.filter(p =>
-                p.productName.toLowerCase().includes(query) ||
-                (p.barcodeValue && p.barcodeValue.includes(query))
-            ).slice(0, 5);
+                                                searchInput.addEventListener("input", function () {
+                                                    const query = this.value.trim().toLowerCase();
+                                                    suggestionsBox.innerHTML = "";
 
-            // Nếu có kết quả → hiện gợi ý
-            if (matched.length > 0) {
-                matched.forEach(product => {
-                    const li = document.createElement("li");
-                    li.classList.add("list-group-item", "list-group-item-action");
-                    li.textContent = `${product.productName} (${product.barcodeValue})`;
-                    li.addEventListener("click", () => {
-                        addProductRow(product);
-                        searchInput.value = "";
-                        suggestionsBox.innerHTML = "";
-                        suggestionsBox.style.display = "none";
+                                                    if (!query) {
+                                                        suggestionsBox.style.display = "none";
+                                                        return;
+                                                    }
+
+                                                    // Tìm sản phẩm theo tên hoặc barcode (tối đa 5 gợi ý)
+                                                    const matched = products.filter(p =>
+                                                        p.productName.toLowerCase().includes(query) ||
+                                                        (p.barcodeValue && p.barcodeValue.includes(query))
+                                                    ).slice(0, 5);
+
+                                                    // Nếu có kết quả → hiện gợi ý
+                                                    if (matched.length > 0) {
+                                                        matched.forEach(product => {
+                                                            const li = document.createElement("li");
+                                                            li.classList.add("list-group-item", "list-group-item-action");
+                                                            li.textContent = `${product.productName} (${product.barcodeValue})`;
+                                                            li.addEventListener("click", () => {
+                                                                addProductRow(product);
+                                                                searchInput.value = "";
+                                                                suggestionsBox.innerHTML = "";
+                                                                suggestionsBox.style.display = "none";
+                                                            });
+                                                            suggestionsBox.appendChild(li);
+                                                        });
+                                                        suggestionsBox.style.display = "block";
+                                                    } else {
+                                                        suggestionsBox.style.display = "none";
+                                                    }
+                                                });
+
+                                                // Ẩn dropdown khi người dùng blur khỏi input (delay nhỏ để xử lý sự kiện click)
+                                                searchInput.addEventListener("blur", function () {
+                                                    setTimeout(() => {
+                                                        suggestionsBox.style.display = "none";
+                                                    }, 200);
+                                                });
+
+                                                // Tìm sản phẩm bằng Enter (nếu muốn dùng cả 2)
+                                                searchInput.addEventListener("keydown", function (e) {
+                                                    if (e.key === "Enter") {
+                                                        e.preventDefault();
+                                                        const query = this.value.trim().toLowerCase();
+                                                        const matched = products.find(p =>
+                                                            p.productName.toLowerCase().includes(query) ||
+                                                            (p.barcodeValue && p.barcodeValue.includes(query))
+                                                        );
+                                                        if (matched) {
+                                                            addProductRow(matched);
+                                                            this.value = "";
+                                                            suggestionsBox.innerHTML = "";
+                                                            suggestionsBox.style.display = "none";
+                                                        } else {
+                                                            alert("Product not found");
+                                                        }
+                                                    }
+                                                });
+                                                        async function requestQrFromServer(amount, description) {
+                                                    try {
+                                                        const response = await fetch("/Order/GenerateQR", {
+                                                            method: "POST",
+                                                            headers: {
+                                                                "Content-Type": "application/json"
+                                                            },
+                                                            body: JSON.stringify({ amount, description })
+                                                        });
+
+                                                        if (!response.ok) throw new Error("Request failed");
+
+                                                        const result = await response.json();
+                                                        return result?.data?.qrCode || null;
+                                                    } catch (error) {
+                                                        console.error("QR request failed:", error);
+                                                        return null;
+                                                    }
+                                                }
+                                                    const bankingCheckbox = document.getElementById("IsBanking");
+
+                                                        let html5QrCode;
+                        let isScanning = false;
+
+                                function startScan() {
+                    if (isScanning) return;
+
+                    const qrRegionId = "reader";
+                    html5QrCode = new Html5Qrcode(qrRegionId);
+                    const config = { fps: 10, qrbox: 250 };
+
+                    html5QrCode.start(
+                        { facingMode: "environment" }, // dùng camera sau
+                        config,
+                        onScanSuccess
+                    ).then(() => {
+                        isScanning = true;
+                    }).catch(err => {
+                        console.error("QR Code start error:", err);
                     });
-                    suggestionsBox.appendChild(li);
-                });
-                suggestionsBox.style.display = "block";
-            } else {
-                suggestionsBox.style.display = "none";
-            }
-        });
-
-        // Ẩn dropdown khi người dùng blur khỏi input (delay nhỏ để xử lý sự kiện click)
-        searchInput.addEventListener("blur", function () {
-            setTimeout(() => {
-                suggestionsBox.style.display = "none";
-            }, 200);
-        });
-
-        // Tìm sản phẩm bằng Enter (nếu muốn dùng cả 2)
-        searchInput.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                const query = this.value.trim().toLowerCase();
-                const matched = products.find(p =>
-                    p.productName.toLowerCase().includes(query) ||
-                    (p.barcodeValue && p.barcodeValue.includes(query))
-                );
-                if (matched) {
-                    addProductRow(matched);
-                    this.value = "";
-                    suggestionsBox.innerHTML = "";
-                    suggestionsBox.style.display = "none";
-                } else {
-                    alert("Product not found");
                 }
-            }
-        });
+
+                        function stopScan() {
+                            if (html5QrCode && isScanning)
+
+                        {
+                            html5QrCode .stop().then(() => {
+                                        html5QrCode.clear();
+                                        isScanning = false;
+                                    }).catch(err => console.error("Stop failed:", err));
+                        }
+
+                        }
+
+                        // Khi mã vạch được quét thành công
+                        function onScanSuccess(decodedText, decodedResult) {
+                            console .log("Scanned barcode:", decodedText);
+                            // Tìm sản phẩm theo barcode const matched = products.find(p => p.barcodeValue === decodedText);
+                            if (matched)
+
+                        {
+                            addProductRow(matched);
+                            stopScan();
+                            // nếu muốn dừng scan sau khi tìm thấy
+                        }
+
+                        else {
+                            alert("Không tìm thấy sản phẩm với mã vạch này");
+                        }
+
+                        }
+                        //Delete product from list
+                                function removeProductRow(btn) {
+            const row = btn.closest(".order-item-row");
+            if (row) row.remove();
+                reindexItems();
+        }
+
+        //adđ items to bind to be
+                function reindexItems() {
+            const rows = document.querySelectorAll(".order-item-row");
+            rows.forEach((row, i) => {
+                row.querySelectorAll("input").forEach(input => {
+                    const name = input.name;
+                    if (name) {
+                        input.name = name.replace(/Items\[\d+\]/, `Items[${i}]`);
+                    }
+                });
+            });
+            index = rows.length;
+        }
+
     </script>
 }
 
@@ -234,8 +398,8 @@
         cursor: pointer;
     }
 
-    #searchSuggestions li:hover {
-        background-color: #f0f0f0;
-    }
+        #searchSuggestions li:hover {
+            background-color: #f0f0f0;
+        }
 
 </style>

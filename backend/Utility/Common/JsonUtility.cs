@@ -64,5 +64,27 @@ namespace Utility.Common
             return result ?? new List<T>();
         }
 
+        public static async Task<ApiResponse<PagedResult<T>>> DeserializePagedResultAsync<T>(HttpResponseMessage response)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            // Áp dụng converter cho List<T>
+            options.Converters.Add(new ListFromDollarValuesConverter<T>());
+
+            var result = JsonSerializer.Deserialize<ApiResponse<PagedResult<T>>>(json, options);
+
+            return result ?? new ApiResponse<PagedResult<T>>
+            {
+                Success = false,
+                Message = "Empty or invalid response.",
+                Data = new PagedResult<T>()
+            };
+        }
+
+
     }
 }

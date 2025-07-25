@@ -20,12 +20,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ListenAnyIP(5101); // Bao gồm cả 127.0.0.1 và mạng LAN
+    serverOptions.ListenAnyIP(5102, listenOptions =>
+    {
+        listenOptions.UseHttps(); // Dùng dev certificate nếu có
+    });
 });
 
 // Log IP
 var host = Dns.GetHostEntry(Dns.GetHostName());
 var localIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.ToString();
-Console.WriteLine($"Login app via: http://{localIp}:5101 OR http://localhost:5101");
+
+var httpPort = 5101;
+var httpsPort = 5102;
+
+Console.WriteLine($"Login app via:");
+Console.WriteLine($"- HTTP : http://{localIp}:{httpPort} OR http://localhost:{httpPort}");
+Console.WriteLine($"- HTTPS: https://{localIp}:{httpsPort} OR https://localhost:{httpsPort}");
+
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
